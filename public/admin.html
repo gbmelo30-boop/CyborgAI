@@ -124,6 +124,21 @@
   @media (min-width:900px){ .card-grid{ grid-template-columns:repeat(4,1fr); } }
   .card-grid .admin-list-item{ display:flex; flex-direction:column; }
   .card-grid .ali-top{ flex-wrap:wrap; }
+  .card-grid .admin-list-item{ height:100%; }
+
+  /* tiles quadrados clicaveis (menu do painel) */
+  .tile-grid{ display:grid; gap:12px; grid-template-columns:repeat(2,1fr); }
+  @media (min-width:600px){ .tile-grid{ grid-template-columns:repeat(3,1fr); } }
+  @media (min-width:900px){ .tile-grid{ grid-template-columns:repeat(4,1fr); } }
+  .tile{ aspect-ratio:1/1; background:var(--ad-panel); border:1px solid var(--ad-line); color:var(--ad-text); cursor:pointer;
+         display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:14px; text-align:center; font-family:inherit;
+         transition:border-color .15s, background .15s, transform .12s;
+         clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px); }
+  .tile:hover{ border-color:var(--ad-accent); background:var(--ad-panel-3); transform:translateY(-2px); }
+  .tile svg{ width:30px; height:30px; fill:var(--ad-dim); }
+  .tile:hover svg{ fill:var(--ad-text); }
+  .tile-n{ font-family:'Share Tech Mono',monospace; font-size:1.8rem; line-height:1; }
+  .tile-l{ font-size:.82rem; color:var(--ad-dim); line-height:1.2; }
 
   /* barra de rolagem sutil, neutra */
   html{ scrollbar-width:thin; scrollbar-color:#2a2f37 transparent; }
@@ -229,24 +244,16 @@
 
       <!-- PAINEL / DASHBOARD -->
       <section id="sec-dash">
-        <div class="dash-grid">
-          <div class="kpi"><div class="n" id="d-sessoes">–</div><div class="l">Sessões</div></div>
-          <div class="kpi"><div class="n" id="d-mensagens">–</div><div class="l">Mensagens</div></div>
-          <div class="kpi"><div class="n" id="d-docs">–</div><div class="l">Docs RAG</div></div>
+        <div class="tile-grid">
+          <button class="tile" onclick="abrirStats()"><svg viewBox="0 0 24 24"><path d="M4 5h16v2H4zm0 4h16v2H4zm0 4h10v2H4z"/></svg><div class="tile-n" id="d-sessoes">–</div><div class="tile-l">Sessões</div></button>
+          <button class="tile" onclick="abrirStats()"><svg viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/></svg><div class="tile-n" id="d-mensagens">–</div><div class="tile-l">Mensagens</div></button>
+          <button class="tile" onclick="abrirStats()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg><div class="tile-n" id="d-docs">–</div><div class="tile-l">Docs RAG</div></button>
+          <button class="tile" onclick="abrirStats()"><svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0 2c-4 0-8 2-8 5v1h16v-1c0-3-4-5-8-5z"/></svg><div class="tile-l">Conversas</div></button>
+          <button class="tile" onclick="abrirConfig()"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54A.48.48 0 0 0 13.9 2h-3.8a.48.48 0 0 0-.47.41l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.75 8.47a.49.49 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.03.24.23.41.47.41h3.8c.23 0 .43-.17.47-.41l.36-2.54c.59-.24 1.12-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 0 0-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg><div class="tile-l">Configurações</div></button>
+          <button class="tile" onclick="abrirDownload()"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg><div class="tile-l">Baixar histórico</div></button>
+          <button class="tile" onclick="abrirApagar()"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg><div class="tile-l">Apagar histórico</div></button>
+          <button class="tile" onclick="abrirTrocarSenha()"><svg viewBox="0 0 24 24"><path d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zm-6 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm3-9H9V6a3 3 0 0 1 6 0v2z"/></svg><div class="tile-l">Trocar senha</div></button>
         </div>
-        <div class="ad-card">
-          <div class="ad-subtitle" style="margin-top:0;">Sessões por tipo</div>
-          <div class="bar-row">
-            <div class="bl"><span>Contas</span><span id="lbl-contas">0</span></div>
-            <div class="bar-track"><div class="bar-fill" id="bar-contas"></div></div>
-          </div>
-          <div class="bar-row">
-            <div class="bl"><span>Visitantes</span><span id="lbl-vis">0</span></div>
-            <div class="bar-track"><div class="bar-fill alt" id="bar-vis"></div></div>
-          </div>
-        </div>
-        <div class="ad-subtitle">Conversas recentes</div>
-        <div id="dash-recentes" class="card-grid"></div>
       </section>
 
       <!-- CONFIG -->
@@ -414,30 +421,15 @@
   }
   async function abrirPainel(){ mostrarSecao('sec-dash','dash'); await carregarPainel(); }
   async function carregarPainel(){
-    const rec=$('dash-recentes'); rec.innerHTML='<div class="admin-empty">Carregando...</div>';
     try {
       const r = await api('/api/admin/sessions', { password: PW });
       const data = await r.json().catch(()=>({}));
-      if(!r.ok){ rec.innerHTML='<div class="admin-empty">Erro ao carregar.</div>'; return; }
+      if(!r.ok) return;
       const st = data.stats||{};
       $('d-sessoes').innerText = st.sessoes ?? '–';
       $('d-mensagens').innerText = st.mensagens ?? '–';
       $('d-docs').innerText = st.documentos ?? '–';
-      const sess = data.sessoes || [];
-      const contas = sess.filter(s=>s.tipo==='conta').length;
-      const vis = sess.length - contas;
-      const tot = Math.max(sess.length,1);
-      $('bar-contas').style.width = (contas/tot*100)+'%'; $('lbl-contas').innerText = contas;
-      $('bar-vis').style.width = (vis/tot*100)+'%'; $('lbl-vis').innerText = vis;
-      if(!sess.length){ rec.innerHTML='<div class="admin-empty">Nenhuma conversa registrada.</div>'; return; }
-      rec.innerHTML='';
-      sess.slice(0,5).forEach(sx => {
-        const div=document.createElement('div'); div.className='admin-list-item';
-        div.onclick=()=>verMensagens(sx.id, sx);
-        div.innerHTML=itemHtml(sx);
-        rec.appendChild(div);
-      });
-    } catch(e){ rec.innerHTML='<div class="admin-empty">Erro de conexão.</div>'; }
+    } catch(e){}
   }
 
   async function carregarApagarLista(){
