@@ -394,12 +394,13 @@ def chat():
     session_id = data.get('session_id')
     user_id = (data.get('user_id') or '').strip()
     estilo = (data.get('estilo') or 'equilibrado').strip()
-    modelo = (data.get('modelo') or 'local').strip().lower()
+    # O modelo agora e uma configuracao GLOBAL controlada pelo painel admin
+    # (nao mais escolhido pelo usuario). Padrao: local.
+    modelo = (db_local.get_config('modelo_ativo', 'local') or 'local').strip().lower()
     if modelo not in ('local', 'gemini'):
         modelo = 'local'
-    # Se o usuario pediu Gemini mas ele nao esta configurado no servidor, cai para o local
     if modelo == 'gemini' and not _gemini_ok:
-        logger.warning("Gemini solicitado, mas indisponivel no servidor; usando modelo local.")
+        logger.warning("Gemini definido no admin, mas indisponivel no servidor; usando modelo local.")
         modelo = 'local'
 
     if not messages:
@@ -710,11 +711,16 @@ def admin_settings():
         if k in permitidos:
             liga = (v is True) or (str(v).lower() in ("1", "true", "on", "sim"))
             db_local.set_config(k, "true" if liga else "false")
+        elif k == "modelo_ativo":
+            mv = str(v).lower().strip()
+            db_local.set_config("modelo_ativo", "gemini" if mv == "gemini" else "local")
 
     return jsonify({
         "config": {
             "gravar_no_bd": db_local.get_bool("gravar_no_bd", True),
             "rag_padrao": db_local.get_bool("rag_padrao", False),
+            "modelo_ativo": db_local.get_config("modelo_ativo", "local"),
+            "gemini_disponivel": _gemini_ok,
         },
         "stats": db_local.stats(),
     })

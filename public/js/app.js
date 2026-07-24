@@ -730,8 +730,10 @@ window.alternarTemaGlobal = () => {
 
         rec = new SR();
         rec.lang = idiomaVoz();
-        rec.interimResults = true;
-        rec.continuous = true;
+        // utterance unica: no Android o modo continuo re-emite trechos e DUPLICA o texto.
+        rec.interimResults = false;
+        rec.continuous = false;
+        rec.maxAlternatives = 1;
         baseText = input.value || '';
         finalBuf = '';
 

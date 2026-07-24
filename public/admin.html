@@ -6,20 +6,31 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Cyborg AI — Painel Administrativo</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=89">
+<link rel="stylesheet" href="css/style.css?v=102">
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
 <style>
-  body { min-height:100vh; margin:0; display:flex; align-items:center; justify-content:center;
-         padding:20px; box-sizing:border-box; background:var(--bg-color, #000000); }
-  .admin-card { width:100%; max-width:520px; background:var(--chat-bg, #0a0a0a);
-                border:1px solid var(--border-color); border-radius:16px; padding:26px 24px;
+  body { min-height:100vh; margin:0; display:flex; align-items:flex-start; justify-content:center;
+         padding:28px 20px; box-sizing:border-box; background:var(--bg-color, #000000); }
+  .admin-card { width:100%; max-width:1000px; background:var(--chat-bg, #0a0a0a);
+                border:1px solid var(--border-color); border-radius:16px; padding:30px 30px;
                 box-shadow:0 12px 48px rgba(0,0,0,0.55); box-sizing:border-box; }
+  /* gate de senha continua estreito e centralizado */
+  #admin-gate { max-width:420px; margin:0 auto; }
   .admin-head { display:flex; align-items:center; gap:12px; margin:0 0 22px; }
-  .admin-head h1 { font-family:'Times New Roman', Times, serif; font-size:1.25em; letter-spacing:2px;
+  .admin-head h1 { font-family:'Times New Roman', Times, serif; font-size:1.35em; letter-spacing:2px;
                    margin:0; color:var(--primary-text-color); }
   .admin-back { background:none; border:none; color:var(--primary-text-color); cursor:pointer;
                 font-size:1.5em; line-height:1; display:none; padding:0 4px; }
+  /* seletor de modelo (Local x Gemini) no admin */
+  .adm-model-seg { display:inline-flex; border:1px solid var(--border-color); border-radius:8px; overflow:hidden; flex-shrink:0; }
+  .adm-model-seg button { background:transparent; border:none; color:var(--secondary-text-color); padding:8px 16px;
+                          cursor:pointer; font-family:inherit; font-size:0.85em; font-weight:700; transition:background .15s, color .15s; }
+  .adm-model-seg button.active { background:var(--led-static-blue); color:#fff; }
+  /* painel do admin em largura confortavel */
+  #admin-panel, #admin-stats-view, #admin-messages-view, #admin-download-view, #admin-delete-view { max-width:920px; margin:0 auto; }
+  .am-tags { gap:8px; }
+  .am-tag { font-size:0.74rem; padding:3px 10px; }
 </style>
 </head>
 <body>
@@ -46,6 +57,18 @@
     </div>
 
     <div id="admin-panel" class="hidden-admin">
+      <div class="config-row">
+        <div>
+          <strong style="display:block; font-size:1.05em;">Modelo do Cyborg AI</strong>
+          <span style="font-size:0.82em; color:var(--secondary-text-color); opacity:0.85;">Define qual modelo responde a TODOS os usuários. O Gemini processa na nuvem do Google.</span>
+        </div>
+        <div class="adm-model-seg" id="adm-model-seg">
+          <button type="button" data-m="local" onclick="setModelo('local')">Local</button>
+          <button type="button" data-m="gemini" onclick="setModelo('gemini')">Gemini</button>
+        </div>
+      </div>
+      <div id="adm-model-hint" style="font-size:0.78em; color:#e0a23c; opacity:0.95; margin:-8px 0 16px;"></div>
+
       <div class="config-row">
         <div>
           <strong style="display:block; font-size:1.05em;">Gravar conversas no BD</strong>
@@ -103,7 +126,16 @@
   const modeloLabel = m => ({local:'Local', gemini:'Gemini'})[m] || 'Local';
   const fmtData = iso => { try { return new Date(iso).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); } catch(e){ return iso||''; } };
   const pintaStats = st => { if(!st) return; $('s-sessoes').innerText=st.sessoes; $('s-mensagens').innerText=st.mensagens; $('s-docs').innerText=st.documentos; };
-  const pintaConfig = d => { $('t-gravar').checked=!!d.config.gravar_no_bd; pintaStats(d.stats); };
+  const pintaModelo = d => {
+    const seg = $('adm-model-seg'); if(!seg || !d.config) return;
+    const m = d.config.modelo_ativo || 'local';
+    seg.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.getAttribute('data-m')===m));
+    const hint = $('adm-model-hint');
+    if (hint) hint.innerText = (d.config.gemini_disponivel===false)
+      ? 'Gemini indisponível no servidor (chave não configurada) — as respostas usam o modelo Local.' : '';
+  };
+  const pintaConfig = d => { $('t-gravar').checked=!!d.config.gravar_no_bd; pintaModelo(d); pintaStats(d.stats); };
+  async function setModelo(m){ await salvar('modelo_ativo', m); }
 
   async function entrar(){
     PW = $('pw').value; const err=$('err'); err.innerText="";

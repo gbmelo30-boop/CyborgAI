@@ -77,6 +77,24 @@ body.light-theme {
 .user-container .message-bubble::before { background: var(--user-message-bg); }
 .input-pill::before { background: var(--input-fill); }
 .history-search::before { background: var(--bot-message-bg); }
+
+/* Barra lateral: mesmos cantos recortados (Nova Conversa, pastas, conversas) */
+.history-item { clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%); }
+.sp-newchat,
+.hist-folder {
+    position: relative;
+    border: none !important;
+    border-radius: 0 !important;
+    background: var(--border-color) !important;
+    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+}
+.sp-newchat::before,
+.hist-folder::before {
+    content: ''; position: absolute; inset: 1px; z-index: -1; pointer-events: none;
+    clip-path: polygon(0 0, calc(100% - 11px) 0, 100% 11px, 100% 100%, 0 100%);
+    background: var(--chat-header-bg);
+}
+.sp-newchat:hover::before { background: var(--component-hover-bg); }
 html, body {
     height: 100vh;
     width: 100vw;
