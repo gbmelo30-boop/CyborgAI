@@ -1,0 +1,8 @@
+{
+  "appId": "br.cyborgai.admin",
+  "appName": "Cyborg Admin",
+  "webDir": "www",
+  "server": {
+    "url": "https://cyborgai.duckdns.org/chat/admin.html"
+  }
+}
