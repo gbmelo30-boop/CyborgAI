@@ -118,6 +118,20 @@
   .bar-fill{ height:100%; background:var(--ad-fill); width:0; transition:width .5s ease; }
   .bar-fill.alt{ background:#3a4250; }
 
+  /* grade responsiva de cards (quadrados cyberpunk): celular 2 / tablet 3 / pc 4 */
+  .card-grid{ display:grid; gap:12px; grid-template-columns:repeat(2,1fr); }
+  @media (min-width:600px){ .card-grid{ grid-template-columns:repeat(3,1fr); } }
+  @media (min-width:900px){ .card-grid{ grid-template-columns:repeat(4,1fr); } }
+  .card-grid .admin-list-item{ display:flex; flex-direction:column; }
+  .card-grid .ali-top{ flex-wrap:wrap; }
+
+  /* barra de rolagem sutil, neutra */
+  html{ scrollbar-width:thin; scrollbar-color:#2a2f37 transparent; }
+  ::-webkit-scrollbar{ width:10px; height:10px; }
+  ::-webkit-scrollbar-thumb{ background:#2a2f37; border:2px solid #000; }
+  ::-webkit-scrollbar-thumb:hover{ background:#3a4250; }
+  ::-webkit-scrollbar-track{ background:transparent; }
+
   /* listas / mensagens (compartilhado) */
   .admin-list{ display:flex; flex-direction:column; gap:8px; max-height:60vh; overflow-y:auto; padding-right:4px; }
   .admin-list-item{ background:var(--ad-panel-2); border:1px solid var(--ad-line); padding:13px; cursor:pointer; transition:border-color .15s,background .15s;
@@ -220,23 +234,19 @@
           <div class="kpi"><div class="n" id="d-mensagens">–</div><div class="l">Mensagens</div></div>
           <div class="kpi"><div class="n" id="d-docs">–</div><div class="l">Docs RAG</div></div>
         </div>
-        <div class="dash-split">
-          <div class="ad-card" style="margin:0;">
-            <div class="ad-subtitle" style="margin-top:0;">Sessões por tipo</div>
-            <div class="bar-row">
-              <div class="bl"><span>Contas</span><span id="lbl-contas">0</span></div>
-              <div class="bar-track"><div class="bar-fill" id="bar-contas"></div></div>
-            </div>
-            <div class="bar-row">
-              <div class="bl"><span>Visitantes</span><span id="lbl-vis">0</span></div>
-              <div class="bar-track"><div class="bar-fill alt" id="bar-vis"></div></div>
-            </div>
+        <div class="ad-card">
+          <div class="ad-subtitle" style="margin-top:0;">Sessões por tipo</div>
+          <div class="bar-row">
+            <div class="bl"><span>Contas</span><span id="lbl-contas">0</span></div>
+            <div class="bar-track"><div class="bar-fill" id="bar-contas"></div></div>
           </div>
-          <div class="ad-card" style="margin:0;">
-            <div class="ad-subtitle" style="margin-top:0;">Conversas recentes</div>
-            <div id="dash-recentes" class="admin-list" style="max-height:none; gap:6px;"></div>
+          <div class="bar-row">
+            <div class="bl"><span>Visitantes</span><span id="lbl-vis">0</span></div>
+            <div class="bar-track"><div class="bar-fill alt" id="bar-vis"></div></div>
           </div>
         </div>
+        <div class="ad-subtitle">Conversas recentes</div>
+        <div id="dash-recentes" class="card-grid"></div>
       </section>
 
       <!-- CONFIG -->
@@ -269,7 +279,7 @@
           <div class="kpi"><div class="n" id="s-docs">–</div><div class="l">Docs RAG</div></div>
         </div>
         <div class="ad-subtitle">Todas as conversas</div>
-        <div id="sessoes-lista" class="admin-list"></div>
+        <div id="sessoes-lista" class="card-grid"></div>
       </section>
 
       <!-- MENSAGENS -->
@@ -294,7 +304,7 @@
           <button class="ad-btn ad-btn-danger" onclick="apagarTudo()">Apagar TODO o histórico</button>
         </div>
         <div class="ad-subtitle">Ou apague uma conversa específica</div>
-        <div id="delete-lista" class="admin-list"></div>
+        <div id="delete-lista" class="card-grid"></div>
       </section>
 
       <!-- SENHA -->
