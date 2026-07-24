@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Cyborg AI — Painel Administrativo</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=102">
+<link rel="stylesheet" href="css/style.css?v=108">
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
 <style>
@@ -31,6 +31,50 @@
   #admin-panel, #admin-stats-view, #admin-messages-view, #admin-download-view, #admin-delete-view { max-width:920px; margin:0 auto; }
   .am-tags { gap:8px; }
   .am-tag { font-size:0.74rem; padding:3px 10px; }
+
+  /* ===== Admin: formas geometricas neutras + responsividade (v108) ===== */
+  .admin-card {
+    border-radius:0;
+    clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
+  }
+  .admin-subtitle { position:relative; padding-left:12px; }
+  .admin-subtitle::before { content:''; position:absolute; left:0; top:50%; transform:translateY(-50%);
+    width:4px; height:12px; background:var(--neutral-line); }
+  .admin-input {
+    border-radius:0 !important;
+    clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 9px 100%, 0 calc(100% - 9px));
+  }
+  .btn-admin-primary, .btn-admin-secondary, .btn-admin-danger {
+    border-radius:0 !important;
+    clip-path: polygon(11px 0, 100% 0, 100% calc(100% - 11px), calc(100% - 11px) 100%, 0 100%, 0 11px);
+  }
+  .admin-stat, .admin-list-item, .admin-msg {
+    border-radius:0 !important;
+    clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+  }
+  .adm-model-seg {
+    border-radius:0 !important; border-color:var(--border-color);
+    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  }
+  .adm-model-seg button.active { background:var(--neutral-fill); color:var(--neutral-on); }
+  .admin-stat .n { color:var(--primary-text-color); }
+
+  /* ===== Responsivo (mobile) ===== */
+  @media (max-width: 600px) {
+    body { padding:14px 10px; align-items:stretch; }
+    .admin-card { padding:20px 15px;
+      clip-path: polygon(0 0, calc(100% - 13px) 0, 100% 13px, 100% 100%, 13px 100%, 0 calc(100% - 13px)); }
+    .admin-head h1 { font-size:1.12em; letter-spacing:1px; }
+    .config-row { flex-direction:column; align-items:stretch; gap:12px; }
+    .adm-model-seg { width:100%; }
+    .adm-model-seg button { flex:1; }
+    .admin-stats { grid-template-columns:repeat(3,1fr); gap:8px; }
+    .admin-stat { padding:12px 6px; }
+    .admin-stat .n { font-size:1.2em; }
+    .admin-stat .l { font-size:0.6em; }
+    .admin-list { max-height:58vh; }
+    #admin-gate { max-width:100%; }
+  }
 </style>
 </head>
 <body>
