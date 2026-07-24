@@ -4,98 +4,120 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<title>Cyborg AI — Painel Administrativo</title>
+<title>Cyborg AI — Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css?v=108">
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
 <style>
   :root{
-    --ad-bg:#000000; --ad-panel:#0a0b0d; --ad-panel-2:#101216; --ad-panel-3:#15181d;
-    --ad-line:#23262d; --ad-line-soft:#1a1d23; --ad-text:#e7ecf2; --ad-dim:#9aa4af;
-    --ad-accent:#c9d1d9; --ad-fill:#2a2f37;
+    --ad-bg:#000000; --ad-panel:#0a0b0d; --ad-panel-2:#101216; --ad-panel-3:#171a20;
+    --ad-line:#262a31; --ad-line-soft:#1a1d23; --ad-text:#e7ecf2; --ad-dim:#98a2ad;
+    --ad-accent:#c9d1d9; --ad-fill:#2a2f37; --ring:#1E40AF;
     --border-color:var(--ad-line); --bot-message-bg:var(--ad-panel-2); --user-message-bg:#16181d;
     --primary-text-color:var(--ad-text); --secondary-text-color:var(--ad-dim);
     --neutral-fill:var(--ad-fill); --neutral-on:var(--ad-text); --neutral-line:var(--ad-accent);
     --chat-bg:var(--ad-panel-2); --led-static-blue:var(--ad-accent);
   }
   *{ box-sizing:border-box; }
-  html,body{ margin:0; height:100%; }
+  html,body{ margin:0; min-height:100%; }
   body{ background:var(--ad-bg); color:var(--ad-text); font-family:'Poppins',sans-serif; -webkit-font-smoothing:antialiased; }
   .hidden-admin{ display:none !important; }
+  .mono{ font-family:'Share Tech Mono',monospace; }
+  html{ scrollbar-width:thin; scrollbar-color:#2a2f37 transparent; }
+  ::-webkit-scrollbar{ width:9px; height:9px; }
+  ::-webkit-scrollbar-thumb{ background:#2a2f37; border:2px solid #000; }
+  ::-webkit-scrollbar-track{ background:transparent; }
 
-  /* ================= LOGIN ================= */
-  .ad-gate{ min-height:100dvh; display:flex; align-items:center; justify-content:center; padding:22px; }
-  .ad-gate-card{ width:100%; max-width:400px; background:var(--ad-panel); border:1px solid var(--ad-line); padding:30px 26px;
-                 clip-path:polygon(16px 0,100% 0,100% calc(100% - 16px),calc(100% - 16px) 100%,0 100%,0 16px); }
-  .ad-gate-brand{ display:flex; align-items:center; gap:12px; margin-bottom:6px; }
-  .ad-gate-brand svg{ width:26px; height:26px; }
-  .ad-gate-brand .t{ font-family:'Share Tech Mono',monospace; font-size:1.15rem; letter-spacing:2px; }
-  .ad-gate h2{ margin:14px 0 4px; font-size:1.05rem; font-weight:600; }
-  .ad-gate p{ margin:0 0 18px; font-size:.82rem; color:var(--ad-dim); }
-  .ad-label{ font-family:'Share Tech Mono',monospace; font-size:.72rem; letter-spacing:1px; text-transform:uppercase; color:var(--ad-dim); margin:0 0 8px; }
+  /* ---- forma cyberpunk com contorno FECHADO (aresta chanfrada completa) ---- */
+  .cyber{ position:relative; background:var(--ad-line);
+          clip-path:polygon(11px 0,100% 0,100% calc(100% - 11px),calc(100% - 11px) 100%,0 100%,0 11px); }
+  .cyber::before{ content:''; position:absolute; inset:1.5px; background:var(--ad-panel); z-index:0; transition:background .15s;
+          clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px); }
+  .cyber > *{ position:relative; z-index:1; }
+
+  /* ---- anel da marca ---- */
+  .ring-svg circle{ stroke:var(--ring); }
+  @keyframes ringPulse{ 0%,100%{ filter:drop-shadow(0 0 10px rgba(30,64,175,.55)); } 50%{ filter:drop-shadow(0 0 20px rgba(30,64,175,.9)); } }
+
+  /* ============ LOGIN ============ */
+  .ad-gate{ min-height:100dvh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:26px; gap:6px; text-align:center; }
+  .gate-ring{ width:96px; height:96px; animation:ringPulse 3.4s ease-in-out infinite; }
+  .gate-name{ font-family:'Share Tech Mono',monospace; font-size:1.5rem; letter-spacing:3px; margin-top:8px; }
+  .gate-sub{ color:var(--ad-dim); font-size:.82rem; margin:2px 0 20px; letter-spacing:.5px; }
+  .gate-form{ width:100%; max-width:360px; }
+  .ad-label{ font-family:'Share Tech Mono',monospace; font-size:.68rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--ad-dim); margin:0 0 8px; text-align:left; }
   .pw-wrap{ position:relative; }
-  .ad-input{ width:100%; background:var(--ad-panel-2); color:var(--ad-text); border:1px solid var(--ad-line);
-             padding:13px 44px 13px 14px; font-family:inherit; font-size:.95rem; outline:none;
-             clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px)); }
+  .ad-input{ width:100%; background:var(--ad-panel-2); color:var(--ad-text); border:none; padding:14px 46px 14px 15px;
+             font-family:inherit; font-size:.95rem; outline:none;
+             clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px); }
   .ad-input:focus{ box-shadow:inset 0 0 0 1.5px var(--ad-accent); }
-  .eye{ position:absolute; right:8px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:var(--ad-dim); cursor:pointer; padding:6px; display:flex; align-items:center; }
+  .eye{ position:absolute; right:10px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:var(--ad-dim); cursor:pointer; padding:6px; display:flex; }
   .eye:hover{ color:var(--ad-text); }
   .ad-err{ color:#ff6b6b; font-size:.82rem; margin-top:12px; min-height:16px; }
+  .ad-btn{ width:100%; margin-top:16px; padding:14px; background:var(--ad-fill); color:var(--ad-text); border:none; cursor:pointer;
+           font-family:'Share Tech Mono',monospace; letter-spacing:2px; text-transform:uppercase; font-size:.9rem;
+           clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px); transition:filter .15s; }
+  .ad-btn:hover{ filter:brightness(1.25); }
+  .ad-btn-ghost{ background:transparent; box-shadow:inset 0 0 0 1px var(--ad-line); }
+  .ad-btn-danger{ background:transparent; color:#ff6b6b; box-shadow:inset 0 0 0 1px #ff6b6b; }
 
-  .ad-btn{ width:100%; margin-top:16px; padding:13px; background:var(--ad-fill); color:var(--ad-text); border:none; cursor:pointer;
-           font-family:'Share Tech Mono',monospace; letter-spacing:1.5px; text-transform:uppercase; font-size:.9rem;
-           clip-path:polygon(11px 0,100% 0,100% calc(100% - 11px),calc(100% - 11px) 100%,0 100%,0 11px); transition:filter .15s; }
-  .ad-btn:hover{ filter:brightness(1.2); }
-  .ad-btn-ghost{ background:transparent; border:1px solid var(--ad-line); }
-  .ad-btn-ghost:hover{ background:var(--ad-panel-3); filter:none; }
-  .ad-btn-danger{ background:transparent; border:1px solid #ff6b6b; color:#ff6b6b; }
-  .ad-btn-danger:hover{ background:rgba(255,107,107,.10); filter:none; }
+  /* ============ APP ============ */
+  /* aba/linha na lateral esquerda que abre o menu */
+  .edge{ position:fixed; left:0; top:50%; transform:translateY(-50%); z-index:25; width:16px; height:96px;
+         background:var(--ad-line); cursor:pointer; display:flex; align-items:center; justify-content:center;
+         clip-path:polygon(0 0,100% 10px,100% calc(100% - 10px),0 100%); transition:width .15s, background .15s; }
+  .edge:hover{ width:20px; background:var(--ad-fill); }
+  .edge span{ width:3px; height:3px; border-radius:50%; background:var(--ad-dim); box-shadow:0 6px 0 var(--ad-dim), 0 -6px 0 var(--ad-dim); }
 
-  /* ================= SITE (topo + abas) ================= */
-  .site-top{ position:sticky; top:0; z-index:30; background:rgba(0,0,0,.92); backdrop-filter:blur(6px);
-             border-bottom:1px solid var(--ad-line); }
-  .site-bar{ display:flex; align-items:center; gap:20px; padding:0 22px; height:58px; max-width:1080px; margin:0 auto; }
-  .site-brand{ display:flex; align-items:center; gap:10px; flex-shrink:0; }
-  .site-brand svg{ width:22px; height:22px; }
-  .site-brand .t{ font-family:'Share Tech Mono',monospace; font-size:.95rem; letter-spacing:1.5px; white-space:nowrap; }
-  .site-tabs{ display:flex; gap:4px; flex:1; overflow-x:auto; scrollbar-width:none; }
-  .site-tabs::-webkit-scrollbar{ display:none; }
-  .tab{ background:transparent; border:none; color:var(--ad-dim); cursor:pointer; padding:8px 14px; font-family:inherit;
-        font-size:.86rem; white-space:nowrap; transition:background .15s,color .15s; position:relative; }
-  .tab:hover{ color:var(--ad-text); }
-  .tab.active{ color:var(--ad-text); background:var(--ad-fill);
-        clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px); }
-  .site-exit{ flex-shrink:0; background:transparent; border:1px solid var(--ad-line); color:var(--ad-dim); cursor:pointer;
-        width:36px; height:36px; display:flex; align-items:center; justify-content:center;
-        clip-path:polygon(7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%,0 7px); }
-  .site-exit:hover{ color:#ff6b6b; border-color:#ff6b6b; }
-  .site-exit svg{ width:18px; height:18px; fill:currentColor; }
+  /* drawer (barra lateral) */
+  .drawer-ov{ position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:40; opacity:0; visibility:hidden; transition:.25s; }
+  .drawer-ov.show{ opacity:1; visibility:visible; }
+  .drawer{ position:fixed; top:0; left:0; height:100dvh; width:min(300px,84vw); z-index:50; background:var(--ad-panel);
+           border-right:1px solid var(--ad-line); transform:translateX(-100%); transition:transform .3s cubic-bezier(.32,.72,0,1);
+           display:flex; flex-direction:column; padding:20px 16px; gap:8px; overflow-y:auto; }
+  .drawer.open{ transform:translateX(0); box-shadow:16px 0 48px rgba(0,0,0,.6); }
+  .drawer-brand{ display:flex; align-items:center; gap:11px; padding:4px 6px 16px; border-bottom:1px solid var(--ad-line-soft); margin-bottom:8px; }
+  .drawer-brand svg{ width:26px; height:26px; }
+  .drawer-brand .t{ font-family:'Share Tech Mono',monospace; font-size:.95rem; letter-spacing:1.5px; line-height:1.2; }
+  .drawer-item{ display:flex; align-items:center; gap:13px; width:100%; cursor:pointer; padding:13px 14px; font-family:inherit;
+                font-size:.92rem; color:var(--ad-text); text-align:left; transition:background .15s, transform .1s; }
+  .drawer-item svg{ width:20px; height:20px; fill:var(--ad-dim); flex-shrink:0; }
+  .drawer-item:hover{ background:var(--ad-accent); transform:translateX(2px); }
+  .drawer-item:hover::before{ background:var(--ad-panel-3); }
+  .drawer-item:hover svg{ fill:var(--ad-text); }
+  .drawer-sep{ flex:1; }
+  .drawer-item.exit svg{ fill:#ff6b6b; }
 
-  .site-main{ max-width:1080px; margin:0 auto; padding:22px 22px 48px; }
-  .page-head{ display:flex; align-items:center; gap:12px; margin-bottom:18px; }
-  .ad-back{ background:transparent; border:none; color:var(--ad-text); cursor:pointer; font-size:1.4rem; line-height:1; padding:0 4px; display:none; }
-  .page-title{ font-family:'Share Tech Mono',monospace; font-size:1.15rem; letter-spacing:1px; text-transform:uppercase; position:relative; padding-left:14px; }
-  .page-title::before{ content:''; position:absolute; left:0; top:50%; transform:translateY(-50%); width:4px; height:16px; background:var(--ad-accent); }
+  /* area principal */
+  .admin-main{ min-height:100dvh; padding:26px 18px 48px; }
+  .content-wrap{ max-width:1000px; margin:0 auto; }
+  .sec-head{ font-family:'Share Tech Mono',monospace; font-size:1.15rem; letter-spacing:1.5px; text-transform:uppercase;
+             position:relative; padding-left:14px; margin:6px 0 20px; }
+  .sec-head::before{ content:''; position:absolute; left:0; top:50%; transform:translateY(-50%); width:4px; height:16px; background:var(--ad-accent); }
 
-  .ad-card{ background:var(--ad-panel); border:1px solid var(--ad-line); padding:20px; margin-bottom:16px;
-            clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px); }
-  .ad-sec-hint{ font-size:.8rem; color:var(--ad-dim); margin:0 0 16px; line-height:1.5; }
-  .ad-subtitle{ font-family:'Share Tech Mono',monospace; font-size:.76rem; letter-spacing:1px; text-transform:uppercase; color:var(--ad-dim);
-                margin:22px 0 10px; position:relative; padding-left:12px; }
-  .ad-subtitle::before{ content:''; position:absolute; left:0; top:50%; transform:translateY(-50%); width:4px; height:11px; background:var(--ad-line); }
+  /* HOME (anel + nome) */
+  #admin-home{ min-height:calc(100dvh - 74px); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:16px; padding:20px; }
+  .home-ring{ width:132px; height:132px; animation:ringPulse 3.4s ease-in-out infinite; }
+  .home-name{ font-family:'Share Tech Mono',monospace; font-size:1.7rem; letter-spacing:4px; }
+  .home-sub{ color:var(--ad-dim); font-size:.85rem; letter-spacing:.5px; max-width:340px; line-height:1.5; }
+  .home-kpis{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; width:100%; max-width:460px; margin-top:14px; }
+  .home-kpi{ padding:16px 10px; text-align:center; }
+  .home-kpi .n{ font-family:'Share Tech Mono',monospace; font-size:1.7rem; line-height:1; }
+  .home-kpi .l{ font-size:.62rem; color:var(--ad-dim); text-transform:uppercase; letter-spacing:1.5px; margin-top:6px; }
 
-  /* linhas de config */
+  /* cartões / config */
+  .ad-card{ padding:20px; margin-bottom:16px; }
+  .ad-sec-hint{ font-size:.82rem; color:var(--ad-dim); margin:0 0 16px; line-height:1.5; }
+  .ad-subtitle{ font-family:'Share Tech Mono',monospace; font-size:.74rem; letter-spacing:1px; text-transform:uppercase; color:var(--ad-dim); margin:20px 0 10px; }
   .ad-row{ display:flex; justify-content:space-between; align-items:center; gap:18px; padding:14px 0; border-bottom:1px solid var(--ad-line-soft); }
   .ad-row:last-child{ border-bottom:none; }
   .ad-row .rt{ flex:1; min-width:0; }
   .ad-row .rt strong{ display:block; font-size:.98rem; font-weight:600; margin-bottom:3px; }
   .ad-row .rt span{ font-size:.8rem; color:var(--ad-dim); line-height:1.45; }
   .ad-hint-warn{ font-size:.76rem; color:#e0a23c; margin:6px 0 0; }
-  .adm-model-seg{ display:inline-flex; border:1px solid var(--ad-line); flex-shrink:0; overflow:hidden;
-                  clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px); }
-  .adm-model-seg button{ background:transparent; border:none; color:var(--ad-dim); padding:9px 18px; cursor:pointer;
-                  font-family:'Share Tech Mono',monospace; font-size:.82rem; transition:background .15s,color .15s; }
+  .adm-model-seg{ display:inline-flex; flex-shrink:0; }
+  .adm-model-seg button{ background:transparent; border:none; color:var(--ad-dim); padding:9px 16px; cursor:pointer; font-family:'Share Tech Mono',monospace; font-size:.8rem; }
   .adm-model-seg button.active{ background:var(--ad-fill); color:var(--ad-text); }
   .switch{ position:relative; display:inline-block; width:50px; height:26px; flex-shrink:0; }
   .switch input{ opacity:0; width:0; height:0; }
@@ -103,100 +125,46 @@
   .slider:before{ content:""; position:absolute; height:16px; width:16px; left:5px; top:50%; transform:translateY(-50%); background:var(--ad-dim); transition:.3s; border-radius:50%; }
   input:checked + .slider{ background:var(--ad-fill); }
   input:checked + .slider:before{ transform:translateY(-50%) translateX(23px); background:var(--ad-text); }
+  .ad-toast{ font-family:'Share Tech Mono',monospace; font-size:.78rem; color:var(--ad-dim); margin-top:14px; min-height:16px; }
 
-  /* ================= DASHBOARD ================= */
-  .dash-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
-  .kpi{ background:var(--ad-panel); border:1px solid var(--ad-line); padding:18px 16px;
-        clip-path:polygon(11px 0,100% 0,100% calc(100% - 11px),calc(100% - 11px) 100%,0 100%,0 11px); }
-  .kpi .n{ font-family:'Share Tech Mono',monospace; font-size:2rem; line-height:1; }
-  .kpi .l{ font-size:.68rem; color:var(--ad-dim); text-transform:uppercase; letter-spacing:1.5px; margin-top:8px; }
-  .dash-split{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px; }
-  .bar-row{ margin:12px 0; }
-  .bar-row .bl{ display:flex; justify-content:space-between; font-size:.8rem; color:var(--ad-dim); margin-bottom:6px; }
-  .bar-track{ height:12px; background:var(--ad-panel-2); border:1px solid var(--ad-line); overflow:hidden;
-              clip-path:polygon(4px 0,100% 0,100% calc(100% - 4px),calc(100% - 4px) 100%,0 100%,0 4px); }
-  .bar-fill{ height:100%; background:var(--ad-fill); width:0; transition:width .5s ease; }
-  .bar-fill.alt{ background:#3a4250; }
-
-  /* grade responsiva de cards (quadrados cyberpunk): celular 2 / tablet 3 / pc 4 */
-  .card-grid{ display:grid; gap:12px; grid-template-columns:repeat(2,1fr); }
-  @media (min-width:600px){ .card-grid{ grid-template-columns:repeat(3,1fr); } }
-  @media (min-width:900px){ .card-grid{ grid-template-columns:repeat(4,1fr); } }
-  .card-grid .admin-list-item{ display:flex; flex-direction:column; }
-  .card-grid .ali-top{ flex-wrap:wrap; }
-  .card-grid .admin-list-item{ height:100%; }
-
-  /* tiles clicaveis (menu do painel) — aresta FECHADA, levemente mais largas */
-  .tile-grid{ display:grid; gap:12px; grid-template-columns:repeat(2,1fr); }
-  @media (min-width:600px){ .tile-grid{ grid-template-columns:repeat(3,1fr); } }
-  @media (min-width:900px){ .tile-grid{ grid-template-columns:repeat(4,1fr); } }
-  .tile{ aspect-ratio:4/3; background:var(--ad-line); color:var(--ad-text); cursor:pointer; position:relative;
-         display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:16px; text-align:center; font-family:inherit;
-         transition:background .15s, transform .12s;
-         clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px); }
-  .tile::before{ content:''; position:absolute; inset:1.5px; background:var(--ad-panel); z-index:0; transition:background .15s;
-         clip-path:polygon(13px 0,100% 0,100% calc(100% - 13px),calc(100% - 13px) 100%,0 100%,0 13px); }
-  .tile > *{ position:relative; z-index:1; }
-  .tile:hover{ background:var(--ad-accent); transform:translateY(-2px); }
-  .tile:hover::before{ background:var(--ad-panel-3); }
-  .tile svg{ width:30px; height:30px; fill:var(--ad-dim); }
-  .tile:hover svg{ fill:var(--ad-text); }
-  .tile-n{ font-family:'Share Tech Mono',monospace; font-size:1.9rem; line-height:1; }
-  .tile-l{ font-size:.84rem; color:var(--ad-dim); line-height:1.2; }
-  /* transicao ao trocar de secao */
-  @keyframes secIn{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:none; } }
-  .sec-anim{ animation:secIn .28s ease; }
-
-  /* barra de rolagem sutil, neutra */
-  html{ scrollbar-width:thin; scrollbar-color:#2a2f37 transparent; }
-  ::-webkit-scrollbar{ width:10px; height:10px; }
-  ::-webkit-scrollbar-thumb{ background:#2a2f37; border:2px solid #000; }
-  ::-webkit-scrollbar-thumb:hover{ background:#3a4250; }
-  ::-webkit-scrollbar-track{ background:transparent; }
-
-  /* listas / mensagens (compartilhado) */
-  .admin-list{ display:flex; flex-direction:column; gap:8px; max-height:60vh; overflow-y:auto; padding-right:4px; }
-  .admin-list-item{ background:var(--ad-panel-2); border:1px solid var(--ad-line); padding:13px; cursor:pointer; transition:border-color .15s,background .15s;
-            clip-path:polygon(9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%,0 9px); }
-  .admin-list-item:hover{ border-color:var(--ad-accent); background:var(--ad-panel-3); }
-  .ali-top{ display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  /* grade responsiva de cards */
+  .card-grid{ display:grid; gap:12px; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); }
+  @media (max-width:520px){ .card-grid{ grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); } }
+  .list-item{ padding:13px; cursor:pointer; height:100%; display:flex; flex-direction:column; transition:background .15s, transform .1s; }
+  .list-item:hover{ transform:translateY(-2px); }
+  .list-item:hover::before{ background:var(--ad-panel-3); }
+  .ali-top{ display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; }
   .ali-user{ font-weight:600; color:var(--ad-text); font-size:.9rem; }
   .ali-count{ font-family:'Share Tech Mono',monospace; font-size:.72rem; color:var(--ad-dim); flex-shrink:0; }
   .ali-sub{ font-size:.72rem; color:var(--ad-dim); margin-top:3px; }
   .ali-title{ font-size:.84rem; color:var(--ad-dim); margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .adm-del-item{ display:flex; align-items:center; gap:10px; }
-  .adm-del-info{ flex:1; min-width:0; }
-  .adm-del-btn{ flex-shrink:0; background:transparent; border:1px solid var(--ad-line); color:#ff6b6b; cursor:pointer;
-            width:38px; height:38px; display:flex; align-items:center; justify-content:center;
+  .del-row{ display:flex; align-items:center; gap:10px; }
+  .del-info{ flex:1; min-width:0; }
+  .del-btn{ flex-shrink:0; background:transparent; border:1px solid var(--ad-line); color:#ff6b6b; cursor:pointer; width:38px; height:38px; display:flex; align-items:center; justify-content:center;
             clip-path:polygon(7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%,0 7px); }
-  .adm-del-btn:hover{ background:rgba(255,107,107,.10); }
-  .adm-del-btn svg{ width:17px; height:17px; fill:currentColor; }
-  .admin-empty{ text-align:center; color:var(--ad-dim); padding:20px; font-size:.85rem; }
+  .del-btn:hover{ background:rgba(255,107,107,.10); }
+  .del-btn svg{ width:17px; height:17px; fill:currentColor; }
+  .empty{ text-align:center; color:var(--ad-dim); padding:20px; font-size:.85rem; grid-column:1/-1; }
   .adm-tipo{ font-size:.62rem; padding:2px 8px; margin-left:6px; font-family:'Share Tech Mono',monospace; }
   .adm-tipo-conta{ background:rgba(34,197,94,.16); color:#22c55e; }
   .adm-tipo-visitante{ background:var(--ad-panel-3); color:var(--ad-dim); }
-  .admin-msg{ border:1px solid var(--ad-line); padding:12px 14px; margin-bottom:10px;
-            clip-path:polygon(9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%,0 9px); }
-  .admin-msg-user{ background:var(--ad-panel-2); }
-  .admin-msg-bot{ background:var(--ad-panel); }
+
+  /* mensagens */
+  .msg-list{ display:flex; flex-direction:column; gap:10px; }
+  .admin-msg{ padding:12px 14px; }
   .am-role{ font-family:'Share Tech Mono',monospace; font-size:.7rem; color:var(--ad-dim); margin-bottom:5px; }
   .am-tags{ display:flex; flex-wrap:wrap; gap:6px; margin:2px 0 8px; }
-  .am-tag{ font-size:.68rem; padding:2px 9px; background:var(--ad-panel-3); color:var(--ad-dim); border:1px solid var(--ad-line); font-family:'Share Tech Mono',monospace; }
-  .am-tag-on{ background:rgba(34,197,94,.14); color:#22c55e; border-color:rgba(34,197,94,.3); }
+  .am-tag{ font-size:.68rem; padding:2px 9px; background:var(--ad-panel-3); color:var(--ad-dim); font-family:'Share Tech Mono',monospace; }
+  .am-tag-on{ background:rgba(34,197,94,.14); color:#22c55e; }
   .am-tag-model{ background:var(--ad-fill); color:var(--ad-text); }
   .am-text{ font-size:.9rem; color:var(--ad-text); white-space:pre-wrap; word-break:break-word; line-height:1.55; }
-  .ad-toast{ font-family:'Share Tech Mono',monospace; font-size:.78rem; color:var(--ad-dim); margin-top:14px; min-height:16px; }
 
-  /* ================= RESPONSIVO ================= */
-  @media (max-width:720px){
-    .site-bar{ flex-wrap:wrap; height:auto; padding:10px 14px; gap:10px; }
-    .site-brand{ order:1; } .site-exit{ order:2; margin-left:auto; }
-    .site-tabs{ order:3; width:100%; }
-    .site-main{ padding:18px 14px 40px; }
-    .dash-grid{ gap:8px; }
-    .kpi .n{ font-size:1.5rem; }
-    .kpi .l{ font-size:.6rem; }
-    .dash-split{ grid-template-columns:1fr; }
+  @keyframes secIn{ from{ opacity:0; transform:translateY(12px); } to{ opacity:1; transform:none; } }
+  .sec-anim{ animation:secIn .3s ease; }
+
+  @media (max-width:600px){
+    .admin-main{ padding:22px 12px 40px; }
+    .home-name{ font-size:1.4rem; letter-spacing:2px; }
     .ad-row{ flex-direction:column; align-items:stretch; gap:12px; }
     .adm-model-seg{ width:100%; } .adm-model-seg button{ flex:1; }
   }
@@ -204,15 +172,12 @@
 </head>
 <body>
 
-  <!-- ================= LOGIN ================= -->
+  <!-- ============ LOGIN ============ -->
   <div class="ad-gate" id="admin-gate">
-    <div class="ad-gate-card">
-      <div class="ad-gate-brand">
-        <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="none" stroke="#1E40AF" stroke-width="2.4" stroke-linecap="round" transform="rotate(-90 10 10)"/></svg>
-        <span class="t">CYBORG // ADMIN</span>
-      </div>
-      <h2>Acesso restrito</h2>
-      <p>Área administrativa. Informe a senha para continuar.</p>
+    <svg class="ring-svg gate-ring" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="none" stroke-width="1.6" stroke-linecap="round" transform="rotate(-90 10 10)"/></svg>
+    <div class="gate-name">CYBORG AI</div>
+    <div class="gate-sub">// ADMIN — acesso restrito</div>
+    <div class="gate-form">
       <div class="ad-label">Senha de administrador</div>
       <div class="pw-wrap">
         <input type="password" id="pw" class="ad-input" placeholder="Digite a senha..." autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();entrar();}">
@@ -223,109 +188,108 @@
     </div>
   </div>
 
-  <!-- ================= SITE ================= -->
+  <!-- ============ APP ============ -->
   <div class="hidden-admin" id="admin-shell">
-    <header class="site-top">
-      <div class="site-bar">
-        <div class="site-brand">
-          <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="none" stroke="#1E40AF" stroke-width="2.4" stroke-linecap="round" transform="rotate(-90 10 10)"/></svg>
-          <span class="t">CYBORG // ADMIN</span>
-        </div>
+    <div class="edge" id="edge" onclick="abrirDrawer()" title="Abrir menu"><span></span></div>
+    <div class="drawer-ov" id="drawer-ov" onclick="fecharDrawer()"></div>
+
+    <aside class="drawer" id="drawer">
+      <div class="drawer-brand">
+        <svg class="ring-svg" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="none" stroke-width="2.2" stroke-linecap="round" transform="rotate(-90 10 10)"/></svg>
+        <span class="t">CYBORG AI<br>// ADMIN</span>
       </div>
-    </header>
+      <button class="drawer-item cyber" onclick="irInicio()"><svg viewBox="0 0 24 24"><path d="M12 3 4 9v12h6v-7h4v7h6V9z"/></svg><span>Início</span></button>
+      <button class="drawer-item cyber" onclick="abrirStats()"><svg viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/></svg><span>Conversas</span></button>
+      <button class="drawer-item cyber" onclick="abrirConfig()"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54A.48.48 0 0 0 13.9 2h-3.8a.48.48 0 0 0-.47.41l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.75 8.47a.49.49 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.04.24.24.41.47.41h3.8c.23 0 .43-.17.47-.41l.36-2.54c.59-.24 1.12-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 0 0-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg><span>Configurações</span></button>
+      <button class="drawer-item cyber" onclick="abrirDownload()"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg><span>Baixar histórico</span></button>
+      <button class="drawer-item cyber" onclick="abrirApagar()"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg><span>Apagar histórico</span></button>
+      <button class="drawer-item cyber" onclick="abrirTrocarSenha()"><svg viewBox="0 0 24 24"><path d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zm-6 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm3-9H9V6a3 3 0 0 1 6 0v2z"/></svg><span>Trocar senha</span></button>
+      <div class="drawer-sep"></div>
+      <button class="drawer-item cyber exit" onclick="location.reload()"><svg viewBox="0 0 24 24"><path d="M10.09 15.59 11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5a2 2 0 0 0-2 2v4h2V5h14v14H5v-4H3v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg><span>Sair</span></button>
+    </aside>
 
-    <main class="site-main">
-      <div class="page-head">
-        <button class="ad-back" id="admin-back" onclick="voltar()" title="Voltar">&#8592;</button>
-        <span class="page-title" id="admin-section-title">Painel</span>
-      </div>
+    <main class="admin-main">
+      <div class="content-wrap">
 
-      <!-- PAINEL / DASHBOARD -->
-      <section id="sec-dash">
-        <div class="tile-grid">
-          <button class="tile" onclick="abrirStats()"><svg viewBox="0 0 24 24"><path d="M4 5h16v2H4zm0 4h16v2H4zm0 4h10v2H4z"/></svg><div class="tile-n" id="d-sessoes">–</div><div class="tile-l">Sessões</div></button>
-          <button class="tile" onclick="abrirStats()"><svg viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/></svg><div class="tile-n" id="d-mensagens">–</div><div class="tile-l">Mensagens</div></button>
-          <button class="tile" onclick="abrirStats()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg><div class="tile-n" id="d-docs">–</div><div class="tile-l">Docs RAG</div></button>
-          <button class="tile" onclick="abrirStats()"><svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0 2c-4 0-8 2-8 5v1h16v-1c0-3-4-5-8-5z"/></svg><div class="tile-l">Conversas</div></button>
-          <button class="tile" onclick="abrirConfig()"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54A.48.48 0 0 0 13.9 2h-3.8a.48.48 0 0 0-.47.41l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.75 8.47a.49.49 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.03.24.23.41.47.41h3.8c.23 0 .43-.17.47-.41l.36-2.54c.59-.24 1.12-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 0 0-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg><div class="tile-l">Configurações</div></button>
-          <button class="tile" onclick="abrirDownload()"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg><div class="tile-l">Baixar histórico</div></button>
-          <button class="tile" onclick="abrirApagar()"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg><div class="tile-l">Apagar histórico</div></button>
-          <button class="tile" onclick="abrirTrocarSenha()"><svg viewBox="0 0 24 24"><path d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zm-6 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm3-9H9V6a3 3 0 0 1 6 0v2z"/></svg><div class="tile-l">Trocar senha</div></button>
-          <button class="tile" onclick="location.reload()"><svg viewBox="0 0 24 24"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg><div class="tile-l">Sair</div></button>
-        </div>
-      </section>
+        <!-- HOME -->
+        <section id="admin-home">
+          <svg class="ring-svg home-ring" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="none" stroke-width="1.5" stroke-linecap="round" transform="rotate(-90 10 10)"/></svg>
+          <div class="home-name">CYBORG AI ADMIN</div>
+          <div class="home-sub">Toque na barra à esquerda para abrir o menu e escolher o que ver.</div>
+        </section>
 
-      <!-- CONFIG -->
-      <section id="admin-panel" class="hidden-admin">
-        <div class="ad-card">
-          <div class="ad-row">
-            <div class="rt">
-              <strong>Modelo do Cyborg AI</strong>
-              <span>Define qual modelo responde a TODOS os usuários. O Gemini processa na nuvem do Google.</span>
-              <div class="ad-hint-warn" id="adm-model-hint"></div>
+        <!-- CONFIG -->
+        <section id="admin-panel" class="hidden-admin">
+          <div class="sec-head">Configurações</div>
+          <div class="ad-card cyber">
+            <div class="ad-row">
+              <div class="rt"><strong>Modelo do Cyborg AI</strong><span>Define qual modelo responde a TODOS os usuários. O Gemini processa na nuvem do Google.</span><div class="ad-hint-warn" id="adm-model-hint"></div></div>
+              <div class="adm-model-seg cyber" id="adm-model-seg">
+                <button type="button" data-m="local" onclick="setModelo('local')">Local</button>
+                <button type="button" data-m="gemini" onclick="setModelo('gemini')">Gemini</button>
+              </div>
             </div>
-            <div class="adm-model-seg" id="adm-model-seg">
-              <button type="button" data-m="local" onclick="setModelo('local')">Local</button>
-              <button type="button" data-m="gemini" onclick="setModelo('gemini')">Gemini</button>
+            <div class="ad-row">
+              <div class="rt"><strong>Gravar conversas no BD</strong><span>Quando desligado, o chat funciona mas nada é salvo.</span></div>
+              <label class="switch"><input type="checkbox" id="t-gravar" onchange="salvar('gravar_no_bd', this.checked)"><span class="slider"></span></label>
             </div>
           </div>
-          <div class="ad-row">
-            <div class="rt"><strong>Gravar conversas no BD</strong><span>Quando desligado, o chat funciona mas nada é salvo.</span></div>
-            <label class="switch"><input type="checkbox" id="t-gravar" onchange="salvar('gravar_no_bd', this.checked)"><span class="slider"></span></label>
+          <div class="ad-toast" id="toast"></div>
+        </section>
+
+        <!-- CONVERSAS -->
+        <section id="admin-stats-view" class="hidden-admin">
+          <div class="sec-head">Conversas</div>
+          <div class="home-kpis" style="max-width:none; margin:0 0 18px;">
+            <div class="home-kpi cyber"><div class="n" id="s-sessoes">–</div><div class="l">Sessões</div></div>
+            <div class="home-kpi cyber"><div class="n" id="s-mensagens">–</div><div class="l">Mensagens</div></div>
+            <div class="home-kpi cyber"><div class="n" id="s-docs">–</div><div class="l">Docs RAG</div></div>
           </div>
-        </div>
-        <div class="ad-toast" id="toast"></div>
-      </section>
+          <div id="sessoes-lista" class="card-grid"></div>
+        </section>
 
-      <!-- CONVERSAS -->
-      <section id="admin-stats-view" class="hidden-admin">
-        <div class="dash-grid">
-          <div class="kpi"><div class="n" id="s-sessoes">–</div><div class="l">Sessões</div></div>
-          <div class="kpi"><div class="n" id="s-mensagens">–</div><div class="l">Mensagens</div></div>
-          <div class="kpi"><div class="n" id="s-docs">–</div><div class="l">Docs RAG</div></div>
-        </div>
-        <div class="ad-subtitle">Todas as conversas</div>
-        <div id="sessoes-lista" class="card-grid"></div>
-      </section>
+        <!-- MENSAGENS -->
+        <section id="admin-messages-view" class="hidden-admin">
+          <div class="sec-head" id="msg-titulo">Conversa</div>
+          <div id="mensagens-lista" class="msg-list"></div>
+        </section>
 
-      <!-- MENSAGENS -->
-      <section id="admin-messages-view" class="hidden-admin">
-        <div class="ad-subtitle" id="msg-titulo">Mensagens</div>
-        <div id="mensagens-lista" class="admin-list" style="max-height:none;"></div>
-      </section>
+        <!-- BAIXAR -->
+        <section id="admin-download-view" class="hidden-admin">
+          <div class="sec-head">Baixar histórico</div>
+          <div class="ad-card cyber">
+            <p class="ad-sec-hint">Baixe todo o histórico de conversas registrado no banco de dados.</p>
+            <button class="ad-btn" onclick="baixarXLSX()">Baixar em XLSX</button>
+            <button class="ad-btn ad-btn-ghost" onclick="baixarCSV()">Baixar em CSV</button>
+          </div>
+        </section>
 
-      <!-- BAIXAR -->
-      <section id="admin-download-view" class="hidden-admin">
-        <div class="ad-card">
-          <p class="ad-sec-hint">Baixe todo o histórico de conversas registrado no banco de dados.</p>
-          <button class="ad-btn" onclick="baixarXLSX()">Baixar em XLSX</button>
-          <button class="ad-btn ad-btn-ghost" onclick="baixarCSV()">Baixar em CSV</button>
-        </div>
-      </section>
+        <!-- APAGAR -->
+        <section id="admin-delete-view" class="hidden-admin">
+          <div class="sec-head">Apagar histórico</div>
+          <div class="ad-card cyber">
+            <p class="ad-sec-hint">Ações irreversíveis. Use com cuidado.</p>
+            <button class="ad-btn ad-btn-danger" onclick="apagarTudo()">Apagar TODO o histórico</button>
+          </div>
+          <div class="ad-subtitle">Ou apague uma conversa específica</div>
+          <div id="delete-lista" class="card-grid"></div>
+        </section>
 
-      <!-- APAGAR -->
-      <section id="admin-delete-view" class="hidden-admin">
-        <div class="ad-card">
-          <p class="ad-sec-hint">Ações irreversíveis. Use com cuidado.</p>
-          <button class="ad-btn ad-btn-danger" onclick="apagarTudo()">Apagar TODO o histórico</button>
-        </div>
-        <div class="ad-subtitle">Ou apague uma conversa específica</div>
-        <div id="delete-lista" class="card-grid"></div>
-      </section>
+        <!-- SENHA -->
+        <section id="admin-pass-view" class="hidden-admin">
+          <div class="sec-head">Trocar senha</div>
+          <div class="ad-card cyber">
+            <div class="ad-label">Nova senha</div>
+            <input type="password" id="np1" class="ad-input" placeholder="Nova senha (mín. 6 caracteres)" autocomplete="new-password">
+            <div class="ad-label" style="margin-top:14px;">Confirmar nova senha</div>
+            <input type="password" id="np2" class="ad-input" placeholder="Repita a nova senha" autocomplete="new-password" onkeydown="if(event.key==='Enter'){event.preventDefault();trocarSenha();}">
+            <button class="ad-btn" onclick="trocarSenha()">Salvar nova senha</button>
+            <div class="ad-err" id="pass-err"></div>
+            <div class="ad-toast" id="pass-toast"></div>
+          </div>
+        </section>
 
-      <!-- SENHA -->
-      <section id="admin-pass-view" class="hidden-admin">
-        <div class="ad-card">
-          <div class="ad-label">Nova senha</div>
-          <input type="password" id="np1" class="ad-input" placeholder="Nova senha (mín. 6 caracteres)" autocomplete="new-password">
-          <div class="ad-label" style="margin-top:14px;">Confirmar nova senha</div>
-          <input type="password" id="np2" class="ad-input" placeholder="Repita a nova senha" autocomplete="new-password" onkeydown="if(event.key==='Enter'){event.preventDefault();trocarSenha();}">
-          <button class="ad-btn" onclick="trocarSenha()">Salvar nova senha</button>
-          <div class="ad-err" id="pass-err"></div>
-          <div class="ad-toast" id="pass-toast"></div>
-        </div>
-      </section>
-
+      </div>
     </main>
   </div>
 
@@ -336,7 +300,6 @@
   const EYE_OFF = '<path d="M12 7a5 5 0 015 5c0 .64-.13 1.25-.36 1.82l2.92 2.92c1.51-1.26 2.7-2.89 3.44-4.74C21.27 7.61 17 4.5 12 4.5c-1.4 0-2.74.25-3.98.7l2.16 2.16c.57-.23 1.18-.36 1.82-.36zM2 4.27l2.28 2.28.46.46A11.8 11.8 0 001 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65a3 3 0 003 3c.22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53a5 5 0 01-5-5c0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16a3 3 0 00-3-3l-.17.01z"/>';
   const show = id => $(id).classList.remove('hidden-admin');
   const hide = id => $(id).classList.add('hidden-admin');
-  const backBtn = v => { $('admin-back').style.display = v ? 'inline-block' : 'none'; };
   const api = (path, body) => fetch(path, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
   const escapeHtml = x => String(x==null?'':x).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const estiloLabel = e => ({mais_filosofico:'Mais filosófico e denso', equilibrado:'Equilibrado', menos_filosofico:'Mais direto'})[e] || (e||'Equilibrado');
@@ -353,24 +316,28 @@
   const pintaConfig = d => { $('t-gravar').checked=!!d.config.gravar_no_bd; pintaModelo(d); pintaStats(d.stats); };
   async function setModelo(m){ await salvar('modelo_ativo', m); }
 
-  // ---------- navegacao por abas ----------
-  const SECS = ['sec-dash','admin-panel','admin-stats-view','admin-messages-view','admin-download-view','admin-delete-view','admin-pass-view'];
-  const TITLES = { 'sec-dash':'Painel','admin-panel':'Configurações','admin-stats-view':'Conversas','admin-messages-view':'Conversa','admin-download-view':'Baixar histórico','admin-delete-view':'Apagar histórico','admin-pass-view':'Trocar senha' };
-  function mostrarSecao(id, navKey){
-    SECS.forEach(s => hide(s));
-    show(id);
-    $('admin-section-title').innerText = TITLES[id] || '';
-    backBtn(id !== 'sec-dash');   // voltar aparece em tudo, menos no Painel
-    const el = $(id); el.classList.remove('sec-anim'); void el.offsetWidth; el.classList.add('sec-anim');
-    window.scrollTo(0,0);
+  // ---------- drawer + navegacao ----------
+  function abrirDrawer(){ $('drawer').classList.add('open'); $('drawer-ov').classList.add('show'); }
+  function fecharDrawer(){ $('drawer').classList.remove('open'); $('drawer-ov').classList.remove('show'); }
+  const VIEWS = ['admin-home','admin-panel','admin-stats-view','admin-messages-view','admin-download-view','admin-delete-view','admin-pass-view'];
+  function mostrar(id){
+    VIEWS.forEach(hide); show(id);
+    const el=$(id); el.classList.remove('sec-anim'); void el.offsetWidth; el.classList.add('sec-anim');
+    fecharDrawer(); window.scrollTo(0,0);
   }
+  function irInicio(){ mostrar('admin-home'); }
+  function abrirConfig(){ mostrar('admin-panel'); }
+  function abrirDownload(){ mostrar('admin-download-view'); }
+  async function abrirApagar(){ mostrar('admin-delete-view'); await carregarApagarLista(); }
+  function abrirTrocarSenha(){ mostrar('admin-pass-view'); $('np1').value=''; $('np2').value=''; $('pass-err').innerText=''; $('pass-toast').innerText=''; }
+  async function abrirStats(){ mostrar('admin-stats-view'); await carregarSessoes(); }
 
   async function entrar(){
     PW = $('pw').value; const err=$('err'); err.innerText="";
     try {
       const r = await api('/api/admin/settings', { password: PW });
       const data = await r.json().catch(()=>({}));
-      if (r.ok) { hide('admin-gate'); show('admin-shell'); pintaConfig(data); abrirPainel(); }
+      if (r.ok) { hide('admin-gate'); show('admin-shell'); pintaConfig(data); irInicio(); }
       else err.innerText = data.error || "Senha incorreta.";
     } catch(e){ err.innerText = "Erro de conexão."; }
   }
@@ -402,15 +369,6 @@
       t.innerText="CSV baixado ✓"; setTimeout(()=>t.innerText="",2000);
     } catch(e){ t.innerText="Erro."; }
   }
-  function abrirConfig(){ mostrarSecao('admin-panel','config'); }
-  function abrirDownload(){ mostrarSecao('admin-download-view','download'); }
-  async function abrirApagar(){ mostrarSecao('admin-delete-view','delete'); await carregarApagarLista(); }
-  function abrirTrocarSenha(){
-    mostrarSecao('admin-pass-view','pass');
-    $('np1').value=''; $('np2').value=''; $('pass-err').innerText=''; $('pass-toast').innerText='';
-  }
-
-  // ---------- dashboard ----------
   function itemHtml(sx){
     const usuario = sx.user_name || sx.user_id || '—';
     const tipoBadge = sx.tipo==='conta' ? '<span class="adm-tipo adm-tipo-conta">Conta</span>' : '<span class="adm-tipo adm-tipo-visitante">Visitante</span>';
@@ -418,37 +376,42 @@
            '<div class="ali-sub">'+fmtData(sx.created_at)+'</div>'+
            '<div class="ali-title">'+escapeHtml(sx.title||'')+'</div>';
   }
-  async function abrirPainel(){ mostrarSecao('sec-dash','dash'); await carregarPainel(); }
-  async function carregarPainel(){
+  async function carregarSessoes(){
+    const lista=$('sessoes-lista'); lista.innerHTML='<div class="empty">Carregando...</div>';
     try {
       const r = await api('/api/admin/sessions', { password: PW });
       const data = await r.json().catch(()=>({}));
-      if(!r.ok) return;
-      const st = data.stats||{};
-      $('d-sessoes').innerText = st.sessoes ?? '–';
-      $('d-mensagens').innerText = st.mensagens ?? '–';
-      $('d-docs').innerText = st.documentos ?? '–';
-    } catch(e){}
-  }
-
-  async function carregarApagarLista(){
-    const lista=$('delete-lista'); lista.innerHTML='<div class="admin-empty">Carregando...</div>';
-    try {
-      const r = await api('/api/admin/sessions', { password: PW });
-      const data = await r.json().catch(()=>({}));
-      if(!r.ok){ lista.innerHTML='<div class="admin-empty">Erro ao carregar.</div>'; return; }
+      if (!r.ok){ lista.innerHTML='<div class="empty">Erro ao carregar.</div>'; return; }
       if (data.stats) pintaStats(data.stats);
       const sess = data.sessoes || [];
-      if(!sess.length){ lista.innerHTML='<div class="admin-empty">Nenhuma conversa registrada.</div>'; return; }
+      if (!sess.length){ lista.innerHTML='<div class="empty">Nenhuma conversa registrada.</div>'; return; }
       lista.innerHTML='';
       sess.forEach(sx => {
-        const div=document.createElement('div'); div.className='admin-list-item adm-del-item';
-        div.innerHTML = '<div class="adm-del-info">'+itemHtml(sx)+'</div>'
-          + '<button class="adm-del-btn" title="Apagar esta conversa"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>';
-        div.querySelector('.adm-del-btn').onclick = () => apagarConversa(sx.id);
+        const div = document.createElement('div'); div.className='list-item cyber';
+        div.onclick = () => verMensagens(sx.id, sx);
+        div.innerHTML = itemHtml(sx);
         lista.appendChild(div);
       });
-    } catch(e){ lista.innerHTML='<div class="admin-empty">Erro de conexão.</div>'; }
+    } catch(e){ lista.innerHTML='<div class="empty">Erro de conexão.</div>'; }
+  }
+  async function carregarApagarLista(){
+    const lista=$('delete-lista'); lista.innerHTML='<div class="empty">Carregando...</div>';
+    try {
+      const r = await api('/api/admin/sessions', { password: PW });
+      const data = await r.json().catch(()=>({}));
+      if(!r.ok){ lista.innerHTML='<div class="empty">Erro ao carregar.</div>'; return; }
+      if (data.stats) pintaStats(data.stats);
+      const sess = data.sessoes || [];
+      if(!sess.length){ lista.innerHTML='<div class="empty">Nenhuma conversa registrada.</div>'; return; }
+      lista.innerHTML='';
+      sess.forEach(sx => {
+        const div=document.createElement('div'); div.className='list-item cyber del-row';
+        div.innerHTML = '<div class="del-info">'+itemHtml(sx)+'</div>'
+          + '<button class="del-btn" title="Apagar esta conversa"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>';
+        div.querySelector('.del-btn').onclick = (ev) => { ev.stopPropagation(); apagarConversa(sx.id); };
+        lista.appendChild(div);
+      });
+    } catch(e){ lista.innerHTML='<div class="empty">Erro de conexão.</div>'; }
   }
   async function apagarConversa(id){
     if(!confirm('Apagar esta conversa permanentemente? Ela some para o usuário e não sai mais nos exports.')) return;
@@ -466,40 +429,20 @@
       if(r.ok){ if(data.stats) pintaStats(data.stats); await carregarApagarLista(); }
     } catch(e){}
   }
-  async function abrirStats(){ mostrarSecao('admin-stats-view','conversas'); await carregarSessoes(); }
-  async function carregarSessoes(){
-    const lista=$('sessoes-lista'); lista.innerHTML='<div class="admin-empty">Carregando...</div>';
-    try {
-      const r = await api('/api/admin/sessions', { password: PW });
-      const data = await r.json().catch(()=>({}));
-      if (!r.ok){ lista.innerHTML='<div class="admin-empty">Erro ao carregar.</div>'; return; }
-      if (data.stats) pintaStats(data.stats);
-      const sess = data.sessoes || [];
-      if (!sess.length){ lista.innerHTML='<div class="admin-empty">Nenhuma conversa registrada.</div>'; return; }
-      lista.innerHTML='';
-      sess.forEach(sx => {
-        const div = document.createElement('div'); div.className='admin-list-item';
-        div.onclick = () => verMensagens(sx.id, sx);
-        div.innerHTML = itemHtml(sx);
-        lista.appendChild(div);
-      });
-    } catch(e){ lista.innerHTML='<div class="admin-empty">Erro de conexão.</div>'; }
-  }
   async function verMensagens(sessionId, sx){
-    mostrarSecao('admin-messages-view','conversas');
+    mostrar('admin-messages-view');
     const usuario = sx ? (sx.user_name || sx.user_id || '—') : '';
     $('msg-titulo').innerText = 'Conversa de ' + usuario;
-    $('admin-section-title').innerText = 'Conversa';
-    const lista=$('mensagens-lista'); lista.innerHTML='<div class="admin-empty">Carregando...</div>';
+    const lista=$('mensagens-lista'); lista.innerHTML='<div class="empty">Carregando...</div>';
     try {
       const r = await api('/api/admin/messages', { password: PW, session_id: sessionId });
       const data = await r.json().catch(()=>({}));
-      if (!r.ok){ lista.innerHTML='<div class="admin-empty">Erro ao carregar.</div>'; return; }
+      if (!r.ok){ lista.innerHTML='<div class="empty">Erro ao carregar.</div>'; return; }
       const msgs = data.mensagens || [];
-      if (!msgs.length){ lista.innerHTML='<div class="admin-empty">Sem mensagens.</div>'; return; }
+      if (!msgs.length){ lista.innerHTML='<div class="empty">Sem mensagens.</div>'; return; }
       lista.innerHTML='';
       msgs.forEach(m => {
-        const div = document.createElement('div'); div.className='admin-msg '+(m.role==='user'?'admin-msg-user':'admin-msg-bot');
+        const div = document.createElement('div'); div.className='admin-msg cyber';
         var texto;
         if (m.role === 'user') { texto = escapeHtml(m.content||''); }
         else {
@@ -516,7 +459,7 @@
         div.innerHTML = '<div class="am-role">'+(m.role==='user'?'Usuário':'Cyborg AI')+' · '+fmtData(m.created_at)+'</div>'+ meta +'<div class="am-text">'+texto+'</div>';
         lista.appendChild(div);
       });
-    } catch(e){ lista.innerHTML='<div class="admin-empty">Erro de conexão.</div>'; }
+    } catch(e){ lista.innerHTML='<div class="empty">Erro de conexão.</div>'; }
   }
   async function trocarSenha(){
     const a=$('np1').value, b=$('np2').value, err=$('pass-err'), t=$('pass-toast'); err.innerText='';
@@ -526,13 +469,9 @@
     try {
       const r = await api('/api/admin/change_password', { password: PW, new_password: a });
       const data = await r.json().catch(()=>({}));
-      if (r.ok){ PW = a; t.innerText='Senha alterada ✓'; setTimeout(()=>{ t.innerText=''; abrirPainel(); }, 1200); }
+      if (r.ok){ PW = a; t.innerText='Senha alterada ✓'; setTimeout(()=>{ t.innerText=''; irInicio(); }, 1200); }
       else { t.innerText=''; err.innerText = data.error || 'Falha ao trocar a senha.'; }
     } catch(e){ t.innerText=''; err.innerText='Erro de conexão.'; }
-  }
-  function voltar(){
-    if(!$('admin-messages-view').classList.contains('hidden-admin')){ abrirStats(); }
-    else { abrirPainel(); }
   }
   function toggleSenha(){
     const inp=$('pw'); const mostrando = inp.type==='text'; inp.type = mostrando ? 'password' : 'text';
