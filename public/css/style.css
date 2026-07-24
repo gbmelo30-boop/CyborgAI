@@ -2088,110 +2088,44 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 .msg-stamp.show { opacity: 0.55; max-width: 220px; margin-left: 5px; }
 
 /* ============================================================================== */
-/*  VISUAL CYBERPUNK / SCI-FI (v103)                                               */
-/*  Linhas na lateral esquerda da sidebar, molduras geometricas no menu do rodape  */
-/*  e nos modais, icone de expandir destacado, microfone neutro com morph/pulso.   */
+/*  MOLDURAS NEUTRAS (v104) — visual discreto em cinza, sem cores de destaque.     */
+/*  Bordas finas neutras + cantos chanfrados. Microfone neutro com morph/pulso.    */
 /* ============================================================================== */
-#view-chat {
-    --cyber-accent: var(--led-static-blue);
-    --cyber-line: rgba(30, 64, 175, 0.55);
-    --cyber-line-soft: rgba(30, 64, 175, 0.22);
-    --cyber-glow: rgba(30, 64, 175, 0.45);
-}
-body.light-theme #view-chat {
-    --cyber-line: rgba(0, 86, 179, 0.45);
-    --cyber-line-soft: rgba(0, 86, 179, 0.18);
-    --cyber-glow: rgba(0, 86, 179, 0.30);
-}
 
-/* ---- 1) Linhas/ticks na lateral esquerda da sidebar (bem na borda) ---- */
-.side-panel { overflow: visible; }
-.side-panel::before {
-    content: ''; position: absolute; top: 0; left: 0; width: 12px; height: 100%;
-    pointer-events: none; z-index: 5; opacity: 0.9;
-    background:
-        linear-gradient(var(--cyber-line), var(--cyber-line)) 2px 0 / 1.5px 100% no-repeat,
-        repeating-linear-gradient(to bottom,
-            var(--cyber-line-soft) 0 3px, transparent 3px 14px) 6px 0 / 2px 100% no-repeat;
-    box-shadow: 0 0 8px var(--cyber-glow);
-}
-/* colchetes de canto (topo e base) no trilho lateral */
-.side-panel::after {
-    content: ''; position: absolute; left: 0; top: 0; width: 12px; height: 100%;
-    pointer-events: none; z-index: 6;
-    background:
-        linear-gradient(var(--cyber-accent), var(--cyber-accent)) 0 0    / 10px 2px no-repeat,
-        linear-gradient(var(--cyber-accent), var(--cyber-accent)) 0 0    / 2px 15px no-repeat,
-        linear-gradient(var(--cyber-accent), var(--cyber-accent)) 0 100% / 10px 2px no-repeat,
-        linear-gradient(var(--cyber-accent), var(--cyber-accent)) 0 100% / 2px 15px no-repeat;
-    filter: drop-shadow(0 0 4px var(--cyber-glow));
-}
-
-/* ---- 2) Icone de expandir (chevron) maior e mais visivel ---- */
+/* Icone de expandir (chevron) um pouco maior e destacado — NEUTRO */
 .sp-user-toggle {
     width: 42px; height: 42px;
-    border: 1px solid var(--cyber-line);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
-    color: var(--cyber-accent);
-    background: linear-gradient(180deg, rgba(127,127,127,0.05), transparent);
-    box-shadow: 0 0 10px var(--cyber-line-soft);
+    color: var(--secondary-text-color);
     clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
 }
-.sp-user-toggle:hover { color: var(--cyber-accent); background: var(--component-hover-bg); box-shadow: 0 0 14px var(--cyber-glow); }
-.sp-chevron { width: 24px; height: 24px; filter: drop-shadow(0 0 4px var(--cyber-glow)); }
+.sp-user-toggle:hover { background: var(--component-hover-bg); color: var(--primary-text-color); }
+.sp-chevron { width: 22px; height: 22px; }
 
-/* ---- 3) Linha da conta com moldura geometrica (formas sci-fi) ---- */
+/* Linha da conta com moldura geometrica NEUTRA (cantos chanfrados) */
 .sp-user-row {
-    border: 1px solid var(--cyber-line-soft);
+    border: 1px solid var(--border-color);
     border-radius: 10px;
     padding: 5px 6px;
-    background: linear-gradient(180deg, rgba(127,127,127,0.05), transparent);
     clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
 }
 
-/* ---- 4) Menu do rodape (aberto) como painel HUD com delimitacoes visiveis ---- */
+/* Menu do rodape (aberto): painel com moldura NEUTRA e cantos chanfrados */
 .side-panel-footer.open .sp-footer-links {
-    border: 1px solid var(--cyber-line);
+    border: 1px solid var(--border-color);
     border-radius: 10px;
     padding: 10px 8px 12px;
     margin-bottom: 8px;
-    background: linear-gradient(180deg, rgba(127,127,127,0.06), transparent);
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
-    position: relative;
     clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
     animation: cyberPanelIn .28s ease;
 }
 @keyframes cyberPanelIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-.side-panel-footer.open .sp-footer-links::before,
-.side-panel-footer.open .sp-footer-links::after {
-    content: ''; position: absolute; width: 14px; height: 14px; pointer-events: none;
-    border: 2px solid var(--cyber-accent);
-    filter: drop-shadow(0 0 3px var(--cyber-glow));
-}
-.side-panel-footer.open .sp-footer-links::before { top: 5px; left: 5px; border-right: none; border-bottom: none; }
-.side-panel-footer.open .sp-footer-links::after { bottom: 5px; right: 5px; border-left: none; border-top: none; }
 
-/* ---- 5) Modais (janelinhas dos icones) com moldura cyberpunk ---- */
-.modal-box { position: relative; overflow: visible; }
-.modal-box::before,
-.modal-box::after {
-    content: ''; position: absolute; width: 20px; height: 20px; pointer-events: none; z-index: 2;
-    border: 2px solid var(--cyber-accent, #1E40AF);
-    filter: drop-shadow(0 0 4px var(--cyber-glow, rgba(30,64,175,0.4)));
-}
-.modal-box::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
-.modal-box::after { bottom: -1px; right: -1px; border-left: none; border-top: none; }
-.modal-box .modal-title { position: relative; padding-left: 12px; }
-.modal-box .modal-title::before {
-    content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-    width: 4px; height: 14px; background: var(--cyber-accent);
-    box-shadow: 0 0 6px var(--cyber-glow);
-}
-
-/* ---- 6) "Fechar aplicativo" em cor NEUTRA (sem vermelho) ---- */
+/* 'Fechar aplicativo' em cor NEUTRA (sem vermelho) */
 #sp-link-exit svg { fill: currentColor; }
 
-/* ---- 7) Microfone: cor NEUTRA + morph (mic -> quadrado) + pulso neutro ---- */
+/* Microfone: cor NEUTRA + morph (mic -> quadrado) + pulso neutro */
 #mic-button .ico-mic,
 #mic-button .ico-mic-stop {
     position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
@@ -2211,5 +2145,4 @@ body.light-theme #view-chat {
     70%  { box-shadow: 0 0 0 11px rgba(125,133,144,0); }
     100% { box-shadow: 0 0 0 0 rgba(125,133,144,0); }
 }
-/* onda sonora do campo em cor neutra */
 .input-pill.is-recording .voice-wave i { background: var(--neutral-line); }
