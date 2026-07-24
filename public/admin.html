@@ -126,19 +126,26 @@
   .card-grid .ali-top{ flex-wrap:wrap; }
   .card-grid .admin-list-item{ height:100%; }
 
-  /* tiles quadrados clicaveis (menu do painel) */
+  /* tiles clicaveis (menu do painel) — aresta FECHADA, levemente mais largas */
   .tile-grid{ display:grid; gap:12px; grid-template-columns:repeat(2,1fr); }
   @media (min-width:600px){ .tile-grid{ grid-template-columns:repeat(3,1fr); } }
   @media (min-width:900px){ .tile-grid{ grid-template-columns:repeat(4,1fr); } }
-  .tile{ aspect-ratio:1/1; background:var(--ad-panel); border:1px solid var(--ad-line); color:var(--ad-text); cursor:pointer;
-         display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:14px; text-align:center; font-family:inherit;
-         transition:border-color .15s, background .15s, transform .12s;
+  .tile{ aspect-ratio:4/3; background:var(--ad-line); color:var(--ad-text); cursor:pointer; position:relative;
+         display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:16px; text-align:center; font-family:inherit;
+         transition:background .15s, transform .12s;
          clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px); }
-  .tile:hover{ border-color:var(--ad-accent); background:var(--ad-panel-3); transform:translateY(-2px); }
+  .tile::before{ content:''; position:absolute; inset:1.5px; background:var(--ad-panel); z-index:0; transition:background .15s;
+         clip-path:polygon(13px 0,100% 0,100% calc(100% - 13px),calc(100% - 13px) 100%,0 100%,0 13px); }
+  .tile > *{ position:relative; z-index:1; }
+  .tile:hover{ background:var(--ad-accent); transform:translateY(-2px); }
+  .tile:hover::before{ background:var(--ad-panel-3); }
   .tile svg{ width:30px; height:30px; fill:var(--ad-dim); }
   .tile:hover svg{ fill:var(--ad-text); }
-  .tile-n{ font-family:'Share Tech Mono',monospace; font-size:1.8rem; line-height:1; }
-  .tile-l{ font-size:.82rem; color:var(--ad-dim); line-height:1.2; }
+  .tile-n{ font-family:'Share Tech Mono',monospace; font-size:1.9rem; line-height:1; }
+  .tile-l{ font-size:.84rem; color:var(--ad-dim); line-height:1.2; }
+  /* transicao ao trocar de secao */
+  @keyframes secIn{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:none; } }
+  .sec-anim{ animation:secIn .28s ease; }
 
   /* barra de rolagem sutil, neutra */
   html{ scrollbar-width:thin; scrollbar-color:#2a2f37 transparent; }
@@ -224,15 +231,6 @@
           <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="none" stroke="#1E40AF" stroke-width="2.4" stroke-linecap="round" transform="rotate(-90 10 10)"/></svg>
           <span class="t">CYBORG // ADMIN</span>
         </div>
-        <nav class="site-tabs">
-          <button class="tab" data-nav="dash"     onclick="abrirPainel()">Painel</button>
-          <button class="tab" data-nav="config"   onclick="abrirConfig()">Configurações</button>
-          <button class="tab" data-nav="conversas" onclick="abrirStats()">Conversas</button>
-          <button class="tab" data-nav="download" onclick="abrirDownload()">Baixar</button>
-          <button class="tab" data-nav="delete"   onclick="abrirApagar()">Apagar</button>
-          <button class="tab" data-nav="pass"     onclick="abrirTrocarSenha()">Senha</button>
-        </nav>
-        <button class="site-exit" onclick="location.reload()" title="Sair / bloquear"><svg viewBox="0 0 24 24"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg></button>
       </div>
     </header>
 
@@ -253,6 +251,7 @@
           <button class="tile" onclick="abrirDownload()"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg><div class="tile-l">Baixar histórico</div></button>
           <button class="tile" onclick="abrirApagar()"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg><div class="tile-l">Apagar histórico</div></button>
           <button class="tile" onclick="abrirTrocarSenha()"><svg viewBox="0 0 24 24"><path d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zm-6 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm3-9H9V6a3 3 0 0 1 6 0v2z"/></svg><div class="tile-l">Trocar senha</div></button>
+          <button class="tile" onclick="location.reload()"><svg viewBox="0 0 24 24"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg><div class="tile-l">Sair</div></button>
         </div>
       </section>
 
@@ -361,8 +360,8 @@
     SECS.forEach(s => hide(s));
     show(id);
     $('admin-section-title').innerText = TITLES[id] || '';
-    document.querySelectorAll('.tab').forEach(n => n.classList.toggle('active', n.dataset.nav === navKey));
-    backBtn(id === 'admin-messages-view');
+    backBtn(id !== 'sec-dash');   // voltar aparece em tudo, menos no Painel
+    const el = $(id); el.classList.remove('sec-anim'); void el.offsetWidth; el.classList.add('sec-anim');
     window.scrollTo(0,0);
   }
 
@@ -531,7 +530,10 @@
       else { t.innerText=''; err.innerText = data.error || 'Falha ao trocar a senha.'; }
     } catch(e){ t.innerText=''; err.innerText='Erro de conexão.'; }
   }
-  function voltar(){ abrirStats(); }
+  function voltar(){
+    if(!$('admin-messages-view').classList.contains('hidden-admin')){ abrirStats(); }
+    else { abrirPainel(); }
+  }
   function toggleSenha(){
     const inp=$('pw'); const mostrando = inp.type==='text'; inp.type = mostrando ? 'password' : 'text';
     $('eye-svg').innerHTML = mostrando ? EYE_ON : EYE_OFF;
