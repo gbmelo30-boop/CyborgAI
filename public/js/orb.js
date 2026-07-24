@@ -19,7 +19,7 @@ function iniciarAnelIntro() {
 
     const ctx = canvas.getContext('2d');
     const REDUZ = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const QTD = MOBILE ? 1500 : 2600;
+    const QTD = MOBILE ? 2600 : 4200;
 
     const SUBIDA = 3400;                     // viagem de cada particula (ms) — mais lenta
     const DELAYS = 1200;                      // espalhamento dos delays (ms)

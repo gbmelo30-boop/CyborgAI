@@ -2235,3 +2235,9 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 .cfg-btn-ghost:hover, .cfg-btn-sair:hover, .lang-option:hover, .mv-folder-opt:hover {
     background: var(--component-hover-bg);
 }
+
+/* Botao "Iniciar" (tela de boas-vindas): forma geometrica chanfrada (v107) */
+.welcome-advance {
+    border-radius: 0;
+    clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+}
