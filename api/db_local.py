@@ -256,6 +256,28 @@ def _hash_pw(password, salt_hex):
     ).hex()
 
 
+# ------------------------------------------------- Senha do admin (trocavel na UI)
+def admin_password_set():
+    """True se o admin ja trocou a senha pela interface (guardada no BD)."""
+    return bool(get_config("admin_pw_hash", ""))
+
+
+def set_admin_password(new_password):
+    salt = os.urandom(16).hex()
+    set_config("admin_pw_hash", salt + "$" + _hash_pw(new_password, salt))
+
+
+def verify_admin_password(password):
+    stored = get_config("admin_pw_hash", "")
+    if not stored:
+        return False
+    try:
+        salt, ph = stored.split("$", 1)
+    except ValueError:
+        return False
+    return _hash_pw(password, salt) == ph
+
+
 def create_user(email, password, name=None):
     email = (email or "").strip().lower()
     if not email or not password:

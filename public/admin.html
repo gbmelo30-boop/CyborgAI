@@ -79,7 +79,20 @@
       <button class="btn-admin-secondary" onclick="abrirStats()">Estatísticas e conversas</button>
       <button class="btn-admin-primary" style="margin-top:20px;" onclick="abrirDownload()">Baixar histórico</button>
       <button class="btn-admin-danger" onclick="abrirApagar()">Apagar histórico</button>
+      <button class="btn-admin-secondary" style="margin-top:10px;" onclick="abrirTrocarSenha()">Trocar senha de admin</button>
       <div class="admin-toast" id="toast"></div>
+    </div>
+
+    <div id="admin-pass-view" class="hidden-admin">
+      <div class="admin-subtitle">Trocar senha de admin</div>
+      <div class="admin-label" style="margin-top:10px;">Nova senha</div>
+      <input type="password" id="np1" class="admin-input" placeholder="Nova senha (mín. 6 caracteres)" autocomplete="new-password">
+      <div class="admin-label" style="margin-top:12px;">Confirmar nova senha</div>
+      <input type="password" id="np2" class="admin-input" placeholder="Repita a nova senha" autocomplete="new-password"
+             onkeydown="if(event.key==='Enter'){event.preventDefault();trocarSenha();}">
+      <button class="btn-admin-primary" style="margin-top:16px;" onclick="trocarSenha()">Salvar nova senha</button>
+      <div class="admin-err" id="pass-err"></div>
+      <div class="admin-toast" id="pass-toast"></div>
     </div>
 
     <div id="admin-stats-view" class="hidden-admin">
@@ -287,8 +300,27 @@
   function abrirDownload(){
     hide('admin-panel'); hide('admin-stats-view'); hide('admin-messages-view'); show('admin-download-view'); backBtn(true);
   }
+  function abrirTrocarSenha(){
+    hide('admin-panel'); hide('admin-stats-view'); hide('admin-messages-view'); hide('admin-download-view'); hide('admin-delete-view');
+    show('admin-pass-view'); backBtn(true);
+    $('np1').value=''; $('np2').value=''; $('pass-err').innerText=''; $('pass-toast').innerText='';
+  }
+  async function trocarSenha(){
+    const a=$('np1').value, b=$('np2').value, err=$('pass-err'), t=$('pass-toast'); err.innerText='';
+    if (a.length < 6){ err.innerText='A nova senha precisa de ao menos 6 caracteres.'; return; }
+    if (a !== b){ err.innerText='As senhas não coincidem.'; return; }
+    t.innerText='Salvando...';
+    try {
+      const r = await api('/api/admin/change_password', { password: PW, new_password: a });
+      const data = await r.json().catch(()=>({}));
+      if (r.ok){ PW = a; t.innerText='Senha alterada ✓'; setTimeout(()=>{ t.innerText=''; voltar(); }, 1200); }
+      else { t.innerText=''; err.innerText = data.error || 'Falha ao trocar a senha.'; }
+    } catch(e){ t.innerText=''; err.innerText='Erro de conexão.'; }
+  }
   function voltar(){
     const msgs=$('admin-messages-view'), stats=$('admin-stats-view'), dl=$('admin-download-view'), del=$('admin-delete-view');
+    const pass=$('admin-pass-view');
+    if (pass && !pass.classList.contains('hidden-admin')){ hide('admin-pass-view'); show('admin-panel'); backBtn(false); return; }
     if (del && !del.classList.contains('hidden-admin')){ hide('admin-delete-view'); show('admin-panel'); backBtn(false); return; }
     if (dl && !dl.classList.contains('hidden-admin')){ hide('admin-download-view'); show('admin-panel'); backBtn(false); return; }
     if (!msgs.classList.contains('hidden-admin')){ hide('admin-messages-view'); show('admin-stats-view'); return; }

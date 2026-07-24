@@ -22,7 +22,13 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "")
 
 
 def _admin_ok(pw):
-    ok = bool(ADMIN_PASSWORD) and hmac.compare_digest(str(pw or ""), ADMIN_PASSWORD)
+    pw = str(pw or "")
+    # Se o admin ja trocou a senha pela interface, ela (guardada com hash no BD)
+    # tem prioridade sobre a do .env. Senao, usa a ADMIN_PASSWORD do .env.
+    if db_local.admin_password_set():
+        ok = db_local.verify_admin_password(pw)
+    else:
+        ok = bool(ADMIN_PASSWORD) and hmac.compare_digest(pw, ADMIN_PASSWORD)
     if not ok:
         time.sleep(0.4)  # freia tentativas de forca bruta no admin
     return ok
@@ -724,6 +730,20 @@ def admin_settings():
         },
         "stats": db_local.stats(),
     })
+
+
+@app.route('/api/admin/change_password', methods=['POST'])
+def admin_change_password():
+    """Troca a senha do admin (guardada com hash no BD). Requer a senha atual."""
+    d = request.json or {}
+    if not _admin_ok(d.get("password")):
+        return jsonify({"error": "Senha atual incorreta."}), 401
+    nova = str(d.get("new_password") or "")
+    if len(nova) < 6:
+        return jsonify({"error": "A nova senha precisa de ao menos 6 caracteres."}), 400
+    db_local.set_admin_password(nova)
+    logger.info("Senha do admin alterada pela interface.")
+    return jsonify({"ok": True})
 
 
 @app.route('/api/admin/export', methods=['POST'])
