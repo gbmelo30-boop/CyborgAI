@@ -665,7 +665,8 @@ window.alternarTemaGlobal = () => {
 // o usuario TOCA de novo para parar. Transcricao no idioma selecionado (pt/en/es).
 (function () {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    let rec = null, gravando = false, baseText = '', finalBuf = '', timerId = null, t0 = 0;
+    let rec = null, gravando = false, manualStop = false;
+    let baseText = '', committed = '', finalBuf = '', timerId = null, t0 = 0;
 
     function idiomaVoz() {
         const l = window.currentLang || 'pt';
@@ -685,15 +686,25 @@ window.alternarTemaGlobal = () => {
         if (btn) btn.classList.toggle('is-listening', on);
         if (pill) pill.classList.toggle('is-recording', on);
     }
+    // consolida o trecho da sessao atual no texto acumulado (evita duplicar
+    // quando o reconhecimento reinicia sozinho apos um silencio).
+    function commitSession() {
+        if (finalBuf) committed = (committed ? committed.replace(/\s+$/, '') + ' ' : '') + finalBuf;
+        finalBuf = '';
+    }
+    function montarTexto() {
+        return ((baseText ? baseText.replace(/\s+$/, '') + ' ' : '') + committed)
+            .replace(/\s+/g, ' ').replace(/^\s+/, '');
+    }
     function finalizar() {
         if (!gravando) return;
         gravando = false;
         setUI(false);
         if (timerId) { clearInterval(timerId); timerId = null; }
+        commitSession();
         const input = document.getElementById('user-input');
         if (!input) return;
-        const txt = (baseText ? baseText.replace(/\s+$/, '') + ' ' : '') + finalBuf;
-        input.value = txt.replace(/\s+/g, ' ').replace(/^\s+/, '');
+        input.value = montarTexto();
         input.dispatchEvent(new Event('input'));  // dispara auto-grow do campo
         try { input.focus(); } catch (e) {}
     }
@@ -705,12 +716,60 @@ window.alternarTemaGlobal = () => {
         clearTimeout(t.__h); t.__h = setTimeout(function () { t.classList.remove('show'); }, 3800);
     }
 
+    // Cria uma sessao de reconhecimento. Se terminar por silencio, ela REINICIA
+    // sozinha para continuar ouvindo — so para de valer quando o usuario toca de
+    // novo no microfone (ou ao enviar a mensagem). Estilo ChatGPT.
+    function iniciarSessao() {
+        rec = new SR();
+        rec.lang = idiomaVoz();
+        rec.continuous = true;
+        rec.interimResults = false;
+        rec.maxAlternatives = 1;
+
+        rec.onerror = function (e) {
+            const code = (e && e.error) || '';
+            if (code === 'not-allowed' || code === 'service-not-allowed') {
+                manualStop = true;
+                voiceToast(window.T ? window.T('voice_denied') : 'Permita o acesso ao microfone para usar a voz.');
+            } else if (code === 'audio-capture') {
+                manualStop = true;
+                voiceToast('Microfone nao encontrado.');
+            } else if (code === 'network') {
+                manualStop = true;
+                voiceToast('Sem conexao para o reconhecimento de voz.');
+            }
+            // 'no-speech' / 'aborted' nao sao fatais: o onend decide reiniciar.
+        };
+
+        rec.onend = function () {
+            // parada pedida pelo usuario (ou erro fatal): finaliza e transcreve
+            if (manualStop || !gravando) { finalizar(); return; }
+            // silencio momentaneo: consolida o trecho e volta a ouvir
+            commitSession();
+            try { iniciarSessao(); }
+            catch (e) { finalizar(); }
+        };
+
+        // reconstroi o texto da sessao a partir de TODOS os resultados finais
+        // (evita duplicar quando o navegador re-emite segmentos).
+        rec.onresult = function (ev) {
+            let full = '';
+            for (let i = 0; i < ev.results.length; i++) {
+                if (ev.results[i].isFinal) full += ev.results[i][0].transcript + ' ';
+            }
+            finalBuf = full.replace(/\s+/g, ' ').trim();
+        };
+
+        try { rec.start(); } catch (e) {}
+    }
+
     window.__voiceStop = function () {
+        manualStop = true;
         if (rec && gravando) { try { rec.stop(); } catch (e) {} }
     };
 
     window.toggleVoiceInput = async function () {
-        if (gravando) { window.__voiceStop(); return; }  // 2o toque: para e transcreve
+        if (gravando) { window.__voiceStop(); return; }   // 2o toque: para e transcreve
         if (!SR) { voiceToast(window.T ? window.T('voice_unsupported') : 'Reconhecimento de voz indisponivel neste navegador.'); return; }
         const secure = (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1');
         if (!secure) { voiceToast(window.T ? window.T('voice_https') : 'O microfone precisa de HTTPS. Abra pelo endereco https.'); return; }
@@ -728,42 +787,16 @@ window.alternarTemaGlobal = () => {
             return;
         }
 
-        rec = new SR();
-        rec.lang = idiomaVoz();
-        // utterance unica: no Android o modo continuo re-emite trechos e DUPLICA o texto.
-        rec.interimResults = false;
-        rec.continuous = false;
-        rec.maxAlternatives = 1;
         baseText = input.value || '';
+        committed = '';
         finalBuf = '';
-
-        rec.onstart = function () {
-            gravando = true; setUI(true);
-            t0 = Date.now(); tick();
-            timerId = setInterval(tick, 500);
-        };
-        rec.onerror = function (e) {
-            const code = (e && e.error) || '';
-            if (code === 'not-allowed' || code === 'service-not-allowed') voiceToast(window.T ? window.T('voice_denied') : 'Permita o acesso ao microfone para usar a voz.');
-            else if (code === 'audio-capture') voiceToast('Microfone nao encontrado.');
-            else if (code === 'network') voiceToast('Sem conexao para o reconhecimento de voz.');
-            finalizar();
-        };
-        rec.onend = function () { finalizar(); };
-        // Reconstroi o texto a partir de TODOS os resultados finais (evita
-        // duplicar/triplicar quando o reconhecimento re-emite segmentos).
-        rec.onresult = function (ev) {
-            let full = '';
-            for (let i = 0; i < ev.results.length; i++) {
-                if (ev.results[i].isFinal) full += ev.results[i][0].transcript + ' ';
-            }
-            finalBuf = full.replace(/\s+/g, ' ').trim();
-        };
-        try { rec.start(); } catch (e) {}
+        manualStop = false;
+        gravando = true;
+        setUI(true);
+        t0 = Date.now(); tick();
+        timerId = setInterval(tick, 500);
+        iniciarSessao();
     };
-
-    // O botao fica sempre visivel: se nao houver suporte, o clique mostra um aviso claro
-    // (assim o usuario entende o motivo em vez de ver um icone "morto").
 })();
 
 window.addMessage = function(author, content, isHtml = false, timestamp = null) {
