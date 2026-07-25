@@ -20,7 +20,7 @@
     --chat-bg:var(--ad-panel-2); --led-static-blue:var(--ad-accent);
   }
   *{ box-sizing:border-box; }
-  html,body{ margin:0; min-height:100%; }
+  html,body{ margin:0; height:auto !important; min-height:100%; overflow-y:auto !important; overflow-x:hidden !important; }
   body{ background:var(--ad-bg); color:var(--ad-text); font-family:'Poppins',sans-serif; -webkit-font-smoothing:antialiased; }
   .hidden-admin{ display:none !important; }
   .mono{ font-family:'Share Tech Mono',monospace; }
@@ -89,6 +89,12 @@
   .drawer-brand{ display:flex; align-items:center; gap:11px; padding:4px 6px 16px; border-bottom:1px solid var(--ad-line-soft); margin-bottom:8px; }
   .drawer-brand svg{ width:26px; height:26px; }
   .drawer-brand .t{ font-family:'Share Tech Mono',monospace; font-size:.95rem; letter-spacing:1.5px; line-height:1.2; }
+  .drawer-close{ margin-left:auto; flex-shrink:0; width:16px; height:54px; background:var(--ad-line); border:none; cursor:pointer;
+                 display:flex; align-items:center; justify-content:center; transition:background .15s;
+                 clip-path:polygon(0 10px,100% 0,100% 100%,0 calc(100% - 10px)); }
+  .drawer-close:hover{ background:var(--ad-fill); }
+  .drawer-close span{ width:3px; height:3px; border-radius:50%; background:var(--ad-dim); box-shadow:0 6px 0 var(--ad-dim), 0 -6px 0 var(--ad-dim); }
+  .drawer-item::before{ background:var(--ad-panel-2); }
   .drawer-item{ display:flex; align-items:center; gap:13px; width:100%; cursor:pointer; padding:13px 14px; font-family:inherit;
                 font-size:.92rem; color:var(--ad-text); text-align:left; transition:background .15s, transform .1s; }
   .drawer-item svg{ width:20px; height:20px; fill:var(--ad-dim); flex-shrink:0; }
@@ -134,7 +140,7 @@
   .slider:before{ content:""; position:absolute; height:16px; width:16px; left:5px; top:50%; transform:translateY(-50%); background:var(--ad-dim); transition:.3s; border-radius:50%; }
   input:checked + .slider{ background:var(--ad-fill); }
   input:checked + .slider:before{ transform:translateY(-50%) translateX(23px); background:var(--ad-text); }
-  .ad-toast{ font-family:'Share Tech Mono',monospace; font-size:.78rem; color:var(--ad-dim); margin-top:14px; min-height:16px; }
+  .ad-toast{ font-family:'Share Tech Mono',monospace; font-size:.78rem; color:var(--ad-dim); margin-top:14px; min-height:16px; text-align:center; }
 
   /* grade responsiva de cards */
   .card-grid{ display:grid; gap:12px; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); }
@@ -206,6 +212,7 @@
       <div class="drawer-brand">
         <svg class="ring-svg" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="none" stroke-width="2.2" stroke-linecap="round" transform="rotate(-90 10 10)"/></svg>
         <span class="t">CYBORG AI<br>ADMIN</span>
+        <button class="drawer-close" onclick="fecharDrawer()" title="Fechar menu" aria-label="Fechar menu"><span></span></button>
       </div>
       <button class="drawer-item cyber" onclick="irInicio()"><svg viewBox="0 0 24 24"><path d="M12 3 4 9v12h6v-7h4v7h6V9z"/></svg><span>Início</span></button>
       <button class="drawer-item cyber" onclick="abrirStats()"><svg viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/></svg><span>Conversas</span></button>
