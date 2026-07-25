@@ -22,7 +22,7 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "")
 
 
 def _admin_ok(pw):
-    pw = str(pw or "")
+    pw = str(pw or "").strip()  # remove espacos invisiveis do teclado
     # Se o admin ja trocou a senha pela interface, ela (guardada com hash no BD)
     # tem prioridade sobre a do .env. Senao, usa a ADMIN_PASSWORD do .env.
     if db_local.admin_password_set():

@@ -349,7 +349,7 @@
   async function abrirStats(){ mostrar('admin-stats-view'); await carregarSessoes(); }
 
   async function entrar(){
-    PW = $('pw').value; const err=$('err'); err.innerText="";
+    PW = ($('pw').value||'').trim(); const err=$('err'); err.innerText="";
     try {
       const r = await api('/api/admin/settings', { password: PW });
       const data = await r.json().catch(()=>({}));
@@ -478,7 +478,7 @@
     } catch(e){ lista.innerHTML='<div class="empty">Erro de conexão.</div>'; }
   }
   async function trocarSenha(){
-    const a=$('np1').value, b=$('np2').value, err=$('pass-err'), t=$('pass-toast'); err.innerText='';
+    const a=($('np1').value||'').trim(), b=($('np2').value||'').trim(), err=$('pass-err'), t=$('pass-toast'); err.innerText='';
     if (a.length < 6){ err.innerText='A nova senha precisa de ao menos 6 caracteres.'; return; }
     if (a !== b){ err.innerText='As senhas não coincidem.'; return; }
     t.innerText='Salvando...';
