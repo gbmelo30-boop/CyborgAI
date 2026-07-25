@@ -424,8 +424,9 @@
   function voltar(){
     // De dentro de uma conversa, volta para a lista de Conversas.
     // Das demais telas, reabre a barra lateral (menu) — onde o usuario estava antes de escolher o item.
-    if(!$('admin-messages-view').classList.contains('hidden-admin')){ abrirStats(); }
-    else { abrirDrawer(); }
+    if(!$('admin-messages-view').classList.contains('hidden-admin')){
+      if(__msgVoltarPara==='apagar') abrirApagar(); else abrirStats();
+    } else { abrirDrawer(); }
   }
   function abrirConfig(){ mostrar('admin-panel'); }
   function abrirDownload(){ mostrar('admin-download-view'); }
@@ -519,6 +520,7 @@
   }
   let SESSOES = [];
   let MSGS_ATUAL = [];
+  let __msgVoltarPara = 'stats';
   let FILTRO = 'todos';
   function setFiltro(f){ FILTRO=f; document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active', c.dataset.f===f)); renderSessoes(); }
   function renderSessoes(){
@@ -533,7 +535,7 @@
     lista.innerHTML='';
     arr.forEach(sx => {
       const div = document.createElement('div'); div.className='list-item cyber';
-      div.onclick = () => verMensagens(sx.id, sx);
+      div.onclick = () => { __msgVoltarPara='stats'; verMensagens(sx.id, sx); };
       div.innerHTML = itemHtml(sx);
       lista.appendChild(div);
     });
@@ -563,6 +565,7 @@
         const div=document.createElement('div'); div.className='list-item cyber del-row';
         div.innerHTML = '<div class="del-info">'+itemHtml(sx)+'</div>'
           + '<button class="del-btn" title="Apagar esta conversa"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>';
+        div.onclick = () => { __msgVoltarPara='apagar'; verMensagens(sx.id, sx); };
         div.querySelector('.del-btn').onclick = (ev) => { ev.stopPropagation(); apagarConversa(sx.id); };
         lista.appendChild(div);
       });
