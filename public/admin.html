@@ -444,10 +444,13 @@
     PW = ($('pw').value||'').trim(); const err=$('err'); err.innerText="";
     try {
       const r = await api('/api/admin/settings', { password: PW });
-      const data = await r.json().catch(()=>({}));
-      if (r.ok) { hide('admin-gate'); show('admin-shell'); pintaConfig(data); irInicio(); }
-      else err.innerText = data.error || "Senha incorreta.";
-    } catch(e){ err.innerText = "Erro de conexão."; }
+      if (r.ok) { const data = await r.json().catch(()=>({})); hide('admin-gate'); show('admin-shell'); pintaConfig(data); irInicio(); return; }
+      if (r.status === 401) { const data = await r.json().catch(()=>({})); err.innerText = data.error || "Senha incorreta."; }
+      else if (r.status === 503) { err.innerText = "O servidor ainda está iniciando (carregando o modelo). Aguarde ~1 min e tente novamente."; }
+      else { err.innerText = "Servidor indisponível (cód. " + r.status + "). Pode estar reiniciando — aguarde ~1 min e tente novamente."; }
+    } catch(e){
+      err.innerText = "Sem conexão com o servidor. Ele pode estar reiniciando — aguarde ~1 min e tente novamente.";
+    }
   }
   async function salvar(chave, valor){
     const t=$('toast'); t.innerText="Salvando...";
