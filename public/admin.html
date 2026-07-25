@@ -469,25 +469,44 @@
       if (r.ok){ pintaConfig(data); t.innerText="Salvo ✓"; setTimeout(()=>t.innerText="",1500); } else t.innerText = data.error || "Falha.";
     } catch(e){ t.innerText="Erro."; }
   }
+  function blobToBase64(blob){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onloadend=()=>res(String(r.result).split(',')[1]||''); r.onerror=rej; r.readAsDataURL(blob); }); }
+  async function salvarArquivo(blob, filename){
+    const cap = window.Capacitor;
+    if (cap && cap.Plugins && cap.Plugins.Filesystem && cap.Plugins.Share) {
+      try {
+        const b64 = await blobToBase64(blob);
+        const FS = cap.Plugins.Filesystem, SH = cap.Plugins.Share;
+        await FS.writeFile({ path: filename, data: b64, directory: 'CACHE' });
+        const uri = await FS.getUri({ path: filename, directory: 'CACHE' });
+        await SH.share({ title: filename, url: uri.uri, dialogTitle: 'Salvar/compartilhar ' + filename });
+        return 'app';
+      } catch(e){}
+    }
+    try {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download=filename; a.rel='noopener';
+      document.body.appendChild(a); a.click();
+      setTimeout(()=>{ try{ document.body.removeChild(a); }catch(_){} URL.revokeObjectURL(url); }, 1500);
+      return 'browser';
+    } catch(e){ return false; }
+  }
   async function baixarXLSX(){
-    const t=$('toast'); t.innerText="Gerando XLSX...";
+    copyToast('Gerando XLSX...');
     try {
       const r = await api('/api/admin/export_xlsx', { password: PW });
-      if (!r.ok){ const e = await r.json().catch(()=>({})); t.innerText = e.error || "Falha ao gerar."; return; }
-      const blob = await r.blob(); const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href=url; a.download='historico_cyborg.xlsx'; a.click(); URL.revokeObjectURL(url);
-      t.innerText="XLSX baixado ✓"; setTimeout(()=>t.innerText="",2000);
-    } catch(e){ t.innerText="Erro."; }
+      if (!r.ok){ const e = await r.json().catch(()=>({})); copyToast(e.error || 'Falha ao gerar.'); return; }
+      const ok = await salvarArquivo(await r.blob(), 'historico_cyborg.xlsx');
+      copyToast(ok==='app' ? 'Escolha onde salvar' : (ok ? 'XLSX pronto ✓' : 'Nao foi possivel baixar.'));
+    } catch(e){ copyToast('Erro de conexao.'); }
   }
   async function baixarCSV(){
-    const t=$('toast'); t.innerText="Gerando CSV...";
+    copyToast('Gerando CSV...');
     try {
       const r = await api('/api/admin/export', { password: PW });
-      if (!r.ok){ t.innerText="Falha ao gerar."; return; }
-      const blob = await r.blob(); const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href=url; a.download='historico_cyborg.csv'; a.click(); URL.revokeObjectURL(url);
-      t.innerText="CSV baixado ✓"; setTimeout(()=>t.innerText="",2000);
-    } catch(e){ t.innerText="Erro."; }
+      if (!r.ok){ copyToast('Falha ao gerar.'); return; }
+      const ok = await salvarArquivo(await r.blob(), 'historico_cyborg.csv');
+      copyToast(ok==='app' ? 'Escolha onde salvar' : (ok ? 'CSV pronto ✓' : 'Nao foi possivel baixar.'));
+    } catch(e){ copyToast('Erro de conexao.'); }
   }
   function itemHtml(sx){
     const usuario = sx.user_name || sx.user_id || '—';
