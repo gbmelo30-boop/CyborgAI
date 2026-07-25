@@ -151,6 +151,19 @@
   /* grade responsiva de cards */
   .card-grid{ display:grid; gap:12px; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); }
   @media (max-width:520px){ .card-grid{ grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); } }
+  .conv-tools{ display:flex; flex-direction:column; gap:10px; margin-bottom:16px; }
+  .conv-search-wrap{ width:100%; }
+  .conv-search-wrap .ad-input{ padding:12px 14px; }
+  .conv-filters{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .chip{ position:relative; background:var(--ad-edge); color:var(--ad-dim); border:none; cursor:pointer; padding:8px 15px;
+         font-family:'Share Tech Mono',monospace; font-size:.76rem; letter-spacing:.5px;
+         clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px); }
+  .chip::before{ content:''; position:absolute; inset:1.5px; background:var(--ad-panel-2); z-index:0; transition:background .15s;
+         clip-path:polygon(7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%,0 7px); }
+  .chip > span{ position:relative; z-index:1; }
+  .chip.active{ background:var(--ad-accent); color:var(--ad-text); }
+  .chip.active::before{ background:var(--ad-fill); }
+  .conv-count{ font-family:'Share Tech Mono',monospace; font-size:.72rem; color:var(--ad-dim); margin-left:auto; }
   .list-item{ padding:13px; cursor:pointer; height:100%; display:flex; flex-direction:column; transition:background .15s, transform .1s; }
   .list-item:hover{ transform:translateY(-2px); }
   .list-item:hover::before{ background:var(--ad-panel-3); }
@@ -256,6 +269,10 @@
               <div class="rt"><strong>Gravar conversas no BD</strong><span>Quando desligado, o chat funciona mas nada é salvo.</span></div>
               <label class="switch"><input type="checkbox" id="t-gravar" onchange="salvar('gravar_no_bd', this.checked)"><span class="slider"></span></label>
             </div>
+            <div class="ad-row">
+              <div class="rt"><strong>Respostas aprimoradas (RAG) por padrão</strong><span>Liga por padrão a consulta à biblioteca de textos da pesquisa para novos participantes.</span></div>
+              <label class="switch"><input type="checkbox" id="t-rag" onchange="salvar('rag_padrao', this.checked)"><span class="slider"></span></label>
+            </div>
           </div>
           <div class="ad-toast" id="toast"></div>
         </section>
@@ -263,10 +280,19 @@
         <!-- CONVERSAS -->
         <section id="admin-stats-view" class="hidden-admin">
           <div class="sec-head"><button class="back-btn" onclick="voltar()" aria-label="Voltar"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6z"/></svg></button><span class="st">Conversas</span></div>
-          <div class="home-kpis" style="max-width:none; margin:0 0 18px;">
+          <div class="home-kpis" style="max-width:none; margin:0 0 16px;">
             <div class="home-kpi cyber"><div class="n" id="s-sessoes">–</div><div class="l">Sessões</div></div>
             <div class="home-kpi cyber"><div class="n" id="s-mensagens">–</div><div class="l">Mensagens</div></div>
             <div class="home-kpi cyber"><div class="n" id="s-docs">–</div><div class="l">Docs RAG</div></div>
+          </div>
+          <div class="conv-tools">
+            <div class="cyber field conv-search-wrap"><input type="text" id="conv-search" class="ad-input" placeholder="Buscar por participante ou título..." autocomplete="off" oninput="renderSessoes()"></div>
+            <div class="conv-filters">
+              <button class="chip active" data-f="todos" onclick="setFiltro('todos')"><span>Todos</span></button>
+              <button class="chip" data-f="conta" onclick="setFiltro('conta')"><span>Contas</span></button>
+              <button class="chip" data-f="visitante" onclick="setFiltro('visitante')"><span>Visitantes</span></button>
+              <span class="conv-count" id="conv-count"></span>
+            </div>
           </div>
           <div id="sessoes-lista" class="card-grid"></div>
         </section>
@@ -336,7 +362,7 @@
     const hint = $('adm-model-hint');
     if (hint) hint.innerText = (d.config.gemini_disponivel===false) ? 'Gemini indisponível no servidor (chave não configurada) — as respostas usam o modelo Local.' : '';
   };
-  const pintaConfig = d => { $('t-gravar').checked=!!d.config.gravar_no_bd; pintaModelo(d); pintaStats(d.stats); };
+  const pintaConfig = d => { $('t-gravar').checked=!!d.config.gravar_no_bd; var rr=$('t-rag'); if(rr) rr.checked=!!d.config.rag_padrao; pintaModelo(d); pintaStats(d.stats); };
   async function setModelo(m){ await salvar('modelo_ativo', m); }
 
   // ---------- drawer + navegacao ----------
@@ -357,7 +383,7 @@
   function abrirDownload(){ mostrar('admin-download-view'); }
   async function abrirApagar(){ mostrar('admin-delete-view'); await carregarApagarLista(); }
   function abrirTrocarSenha(){ mostrar('admin-pass-view'); $('np1').value=''; $('np2').value=''; $('pass-err').innerText=''; $('pass-toast').innerText=''; }
-  async function abrirStats(){ mostrar('admin-stats-view'); await carregarSessoes(); }
+  async function abrirStats(){ mostrar('admin-stats-view'); FILTRO='todos'; var cs=$('conv-search'); if(cs) cs.value=''; document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active', c.dataset.f==='todos')); await carregarSessoes(); }
 
   async function entrar(){
     PW = ($('pw').value||'').trim(); const err=$('err'); err.innerText="";
@@ -403,6 +429,26 @@
            '<div class="ali-sub">'+fmtData(sx.created_at)+'</div>'+
            '<div class="ali-title">'+escapeHtml(sx.title||'')+'</div>';
   }
+  let SESSOES = [];
+  let FILTRO = 'todos';
+  function setFiltro(f){ FILTRO=f; document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active', c.dataset.f===f)); renderSessoes(); }
+  function renderSessoes(){
+    const lista=$('sessoes-lista'); if(!lista) return;
+    const q = (($('conv-search')||{}).value||'').toLowerCase().trim();
+    let arr = SESSOES.slice();
+    if(FILTRO==='conta') arr = arr.filter(s => s.tipo==='conta');
+    else if(FILTRO==='visitante') arr = arr.filter(s => s.tipo!=='conta');
+    if(q) arr = arr.filter(s => ((s.user_name||s.user_id||'')+' '+(s.title||'')).toLowerCase().includes(q));
+    const cc=$('conv-count'); if(cc) cc.textContent = arr.length + (arr.length===1?' conversa':' conversas');
+    if(!arr.length){ lista.innerHTML='<div class="empty">Nenhuma conversa encontrada.</div>'; return; }
+    lista.innerHTML='';
+    arr.forEach(sx => {
+      const div = document.createElement('div'); div.className='list-item cyber';
+      div.onclick = () => verMensagens(sx.id, sx);
+      div.innerHTML = itemHtml(sx);
+      lista.appendChild(div);
+    });
+  }
   async function carregarSessoes(){
     const lista=$('sessoes-lista'); lista.innerHTML='<div class="empty">Carregando...</div>';
     try {
@@ -410,15 +456,8 @@
       const data = await r.json().catch(()=>({}));
       if (!r.ok){ lista.innerHTML='<div class="empty">Erro ao carregar.</div>'; return; }
       if (data.stats) pintaStats(data.stats);
-      const sess = data.sessoes || [];
-      if (!sess.length){ lista.innerHTML='<div class="empty">Nenhuma conversa registrada.</div>'; return; }
-      lista.innerHTML='';
-      sess.forEach(sx => {
-        const div = document.createElement('div'); div.className='list-item cyber';
-        div.onclick = () => verMensagens(sx.id, sx);
-        div.innerHTML = itemHtml(sx);
-        lista.appendChild(div);
-      });
+      SESSOES = data.sessoes || [];
+      renderSessoes();
     } catch(e){ lista.innerHTML='<div class="empty">Erro de conexão.</div>'; }
   }
   async function carregarApagarLista(){
