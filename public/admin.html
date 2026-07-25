@@ -13,7 +13,7 @@
   :root{
     --ad-bg:#000000; --ad-panel:#0a0b0d; --ad-panel-2:#101216; --ad-panel-3:#171a20;
     --ad-line:#262a31; --ad-line-soft:#1a1d23; --ad-text:#e7ecf2; --ad-dim:#98a2ad;
-    --ad-accent:#c9d1d9; --ad-fill:#2a2f37; --ring:#1E40AF;
+    --ad-accent:#c9d1d9; --ad-fill:#2a2f37; --ring:#1E40AF; --ad-edge:#454c57;
     --border-color:var(--ad-line); --bot-message-bg:var(--ad-panel-2); --user-message-bg:#16181d;
     --primary-text-color:var(--ad-text); --secondary-text-color:var(--ad-dim);
     --neutral-fill:var(--ad-fill); --neutral-on:var(--ad-text); --neutral-line:var(--ad-accent);
@@ -30,7 +30,7 @@
   ::-webkit-scrollbar-track{ background:transparent; }
 
   /* ---- forma cyberpunk com contorno FECHADO (aresta chanfrada completa) ---- */
-  .cyber{ position:relative; background:var(--ad-line);
+  .cyber{ position:relative; background:var(--ad-edge);
           clip-path:polygon(11px 0,100% 0,100% calc(100% - 11px),calc(100% - 11px) 100%,0 100%,0 11px); }
   .cyber::before{ content:''; position:absolute; inset:1.5px; background:var(--ad-panel); z-index:0; transition:background .15s;
           clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px); }
@@ -94,7 +94,7 @@
                  clip-path:polygon(0 10px,100% 0,100% 100%,0 calc(100% - 10px)); }
   .drawer-close:hover{ background:var(--ad-fill); }
   .drawer-close span{ width:3px; height:3px; border-radius:50%; background:var(--ad-dim); box-shadow:0 6px 0 var(--ad-dim), 0 -6px 0 var(--ad-dim); }
-  .drawer-item::before{ background:var(--ad-panel-2); }
+  .drawer-item::before{ background:#1b1f27; }
   .drawer-item{ display:flex; align-items:center; gap:13px; width:100%; cursor:pointer; padding:13px 14px; font-family:inherit;
                 font-size:.92rem; color:var(--ad-text); text-align:left; transition:background .15s, transform .1s; }
   .drawer-item svg{ width:20px; height:20px; fill:var(--ad-dim); flex-shrink:0; }
