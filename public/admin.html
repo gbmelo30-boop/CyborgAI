@@ -105,8 +105,8 @@
   .drawer-item.exit svg{ fill:#ff6b6b; }
 
   /* area principal */
-  .admin-main{ min-height:100dvh; padding:26px 18px 48px; }
-  .content-wrap{ max-width:1000px; margin:0 auto; }
+  .admin-main{ min-height:100dvh; padding:26px 18px 48px; overflow-x:hidden; }
+  .content-wrap{ max-width:1000px; width:100%; margin:0 auto; }
   .sec-head{ display:flex; align-items:center; gap:12px; margin:6px 0 20px; }
   .sec-head .st{ font-family:'Share Tech Mono',monospace; font-size:1.12rem; letter-spacing:1.5px; text-transform:uppercase; }
   .back-btn{ flex-shrink:0; width:40px; height:40px; background:var(--ad-edge); border:none; cursor:pointer; position:relative;
@@ -191,8 +191,17 @@
   .am-tag{ font-size:.68rem; padding:2px 9px; background:var(--ad-panel-3); color:var(--ad-dim); font-family:'Share Tech Mono',monospace; }
   .am-tag-on{ background:rgba(34,197,94,.14); color:#22c55e; }
   .am-tag-model{ background:var(--ad-fill); color:var(--ad-text); }
-  .am-text{ font-size:.9rem; color:var(--ad-text); white-space:normal; word-break:break-word; line-height:1.55; }
+  .am-text{ font-size:.9rem; color:var(--ad-text); white-space:normal; word-break:break-word; overflow-wrap:anywhere; line-height:1.55; min-width:0; }
   .admin-msg-user .am-text{ white-space:pre-wrap; }
+  .msg-list{ min-width:0; }
+  .admin-msg{ min-width:0; max-width:100%; }
+  /* conteudo largo (tabela/codigo) rola so nele, com barra sutil e neutra embaixo */
+  .am-text table, .am-text pre{ display:block; max-width:100%; overflow-x:auto; }
+  .am-text table{ width:auto; }
+  .am-text table::-webkit-scrollbar, .am-text pre::-webkit-scrollbar{ height:8px; }
+  .am-text table::-webkit-scrollbar-thumb, .am-text pre::-webkit-scrollbar-thumb{ background:#2a2f37; }
+  .am-text table::-webkit-scrollbar-track, .am-text pre::-webkit-scrollbar-track{ background:transparent; }
+  .am-text table, .am-text pre{ scrollbar-width:thin; scrollbar-color:#2a2f37 transparent; }
 
   .mini-btn{ margin-left:auto; flex-shrink:0; width:36px; height:36px; background:var(--ad-edge); border:none; cursor:pointer; position:relative; display:flex; align-items:center; justify-content:center;
              clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px); }
