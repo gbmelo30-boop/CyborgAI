@@ -882,6 +882,32 @@ def admin_activity():
     return jsonify({"atividades": db_local.list_activities()})
 
 
+@app.route('/api/admin/users', methods=['POST'])
+def admin_users():
+    d = request.json or {}
+    if not ADMIN_PASSWORD:
+        return jsonify({"error": "Admin não configurado no servidor (defina ADMIN_PASSWORD no api/.env)."}), 503
+    if not _admin_ok(d.get("password")):
+        return jsonify({"error": "Senha incorreta."}), 401
+    return jsonify({"usuarios": db_local.list_users()})
+
+
+@app.route('/api/admin/delete_user', methods=['POST'])
+def admin_delete_user():
+    d = request.json or {}
+    if not ADMIN_PASSWORD:
+        return jsonify({"error": "Admin não configurado no servidor (defina ADMIN_PASSWORD no api/.env)."}), 503
+    if not _admin_ok(d.get("password")):
+        return jsonify({"error": "Senha incorreta."}), 401
+    uid = (d.get("user_id") or "").strip()
+    if not uid:
+        return jsonify({"error": "user_id obrigatório"}), 400
+    res = db_local.delete_user(uid)
+    if res.get("error"):
+        return jsonify(res), 400
+    return jsonify({"ok": True, "usuarios": db_local.list_users()})
+
+
 @app.route('/api/guest_login', methods=['POST'])
 def guest_login():
     return jsonify({"user_id": str(uuid.uuid4()), "role": "guest"})

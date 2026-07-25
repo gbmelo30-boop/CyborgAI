@@ -346,6 +346,18 @@ def delete_user(user_id):
     return {"ok": True}
 
 
+def list_users(limit=2000):
+    """Contas cadastradas (uso admin): apenas email + data + nº de conversas."""
+    with _conn() as c:
+        rows = c.execute(
+            "SELECT u.id, u.email, u.created_at, "
+            "(SELECT COUNT(*) FROM chat_sessions s WHERE s.user_id = u.id) AS n_sessoes "
+            "FROM users u ORDER BY u.created_at DESC LIMIT ?",
+            (limit,),
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
 def update_user(user_id, name=None, email=None, password=None):
     sets, vals = [], []
     if name is not None and name.strip():
