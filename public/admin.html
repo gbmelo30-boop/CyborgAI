@@ -422,8 +422,10 @@
   }
   function irInicio(){ mostrar('admin-home'); }
   function voltar(){
+    // De dentro de uma conversa, volta para a lista de Conversas.
+    // Das demais telas, reabre a barra lateral (menu) — onde o usuario estava antes de escolher o item.
     if(!$('admin-messages-view').classList.contains('hidden-admin')){ abrirStats(); }
-    else { irInicio(); }
+    else { abrirDrawer(); }
   }
   function abrirConfig(){ mostrar('admin-panel'); }
   function abrirDownload(){ mostrar('admin-download-view'); }
