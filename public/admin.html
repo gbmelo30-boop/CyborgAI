@@ -194,6 +194,25 @@
   .am-text{ font-size:.9rem; color:var(--ad-text); white-space:normal; word-break:break-word; line-height:1.55; }
   .admin-msg-user .am-text{ white-space:pre-wrap; }
 
+  .mini-btn{ margin-left:auto; flex-shrink:0; width:36px; height:36px; background:var(--ad-edge); border:none; cursor:pointer; position:relative; display:flex; align-items:center; justify-content:center;
+             clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px); }
+  .mini-btn::before{ content:''; position:absolute; inset:1.5px; background:var(--ad-panel-2); z-index:0; transition:background .15s; clip-path:polygon(7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%,0 7px); }
+  .mini-btn:hover::before{ background:var(--ad-panel-3); }
+  .mini-btn svg{ position:relative; z-index:1; width:18px; height:18px; fill:var(--ad-dim); }
+  .mini-btn:hover svg{ fill:var(--ad-text); }
+  .list-item.static{ cursor:default; } .list-item.static:hover{ transform:none; }
+  .list-item.static:hover::before{ background:var(--ad-panel); }
+  .act-body{ font-size:.82rem; color:var(--ad-dim); margin-top:8px; line-height:1.45; }
+  .copy-toast{ position:fixed; left:50%; bottom:28px; transform:translateX(-50%) translateY(10px); background:var(--ad-edge); color:var(--ad-text);
+               font-family:'Share Tech Mono',monospace; font-size:.8rem; padding:10px 18px; z-index:80; opacity:0; visibility:hidden; transition:.25s;
+               clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px); }
+  .copy-toast.show{ opacity:1; visibility:visible; transform:translateX(-50%) translateY(0); }
+  .confirm-ov{ position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:70; display:flex; align-items:center; justify-content:center; padding:24px; opacity:0; visibility:hidden; transition:.2s; }
+  .confirm-ov.show{ opacity:1; visibility:visible; }
+  .confirm-box{ width:100%; max-width:400px; padding:24px; }
+  .confirm-msg{ font-size:.92rem; color:var(--ad-text); line-height:1.5; margin-bottom:20px; }
+  .confirm-actions{ display:flex; gap:10px; }
+  .confirm-actions .ad-btn{ width:auto; flex:1; margin-top:0; }
   @keyframes secIn{ from{ opacity:0; transform:translateY(12px); } to{ opacity:1; transform:none; } }
   .sec-anim{ animation:secIn .3s ease; }
 
@@ -236,6 +255,7 @@
       </div>
       <button class="drawer-item cyber" onclick="irInicio()"><svg viewBox="0 0 24 24"><path d="M12 3 4 9v12h6v-7h4v7h6V9z"/></svg><span>Início</span></button>
       <button class="drawer-item cyber" onclick="abrirStats()"><svg viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/></svg><span>Conversas</span></button>
+      <button class="drawer-item cyber" onclick="abrirAtividade()"><svg viewBox="0 0 24 24"><path d="M13 3a9 9 0 0 0-9 9H1l4 4 4-4H6a7 7 0 1 1 2 5l-1.45 1.4A9 9 0 1 0 13 3zm-1 5v5l4 2 .75-1.2-3.25-1.95V8z"/></svg><span>Atividade</span></button>
       <button class="drawer-item cyber" onclick="abrirConfig()"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54A.48.48 0 0 0 13.9 2h-3.8a.48.48 0 0 0-.47.41l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.75 8.47a.49.49 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.04.24.24.41.47.41h3.8c.23 0 .43-.17.47-.41l.36-2.54c.59-.24 1.12-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 0 0-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg><span>Configurações</span></button>
       <button class="drawer-item cyber" onclick="abrirDownload()"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg><span>Baixar histórico</span></button>
       <button class="drawer-item cyber" onclick="abrirApagar()"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg><span>Apagar histórico</span></button>
@@ -299,11 +319,18 @@
 
         <!-- MENSAGENS -->
         <section id="admin-messages-view" class="hidden-admin">
-          <div class="sec-head"><button class="back-btn" onclick="voltar()" aria-label="Voltar"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6z"/></svg></button><span class="st" id="msg-titulo">Conversa</span></div>
+          <div class="sec-head"><button class="back-btn" onclick="voltar()" aria-label="Voltar"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6z"/></svg></button><span class="st" id="msg-titulo">Conversa</span><button class="mini-btn" onclick="copiarConversa()" title="Copiar conversa" aria-label="Copiar conversa"><svg viewBox="0 0 24 24"><path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg></button></div>
           <div id="mensagens-lista" class="msg-list"></div>
         </section>
 
-        <!-- BAIXAR -->
+        <!-- ATIVIDADE -->
+      <section id="admin-activity-view" class="hidden-admin">
+        <div class="sec-head"><button class="back-btn" onclick="voltar()" aria-label="Voltar"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6z"/></svg></button><span class="st">Atividade</span></div>
+        <div class="ad-sec-hint">Ajustes feitos pelos participantes (respostas aprimoradas, estilo, memória). Registro mais recente primeiro.</div>
+        <div id="atividade-lista" class="card-grid"></div>
+      </section>
+
+      <!-- BAIXAR -->
         <section id="admin-download-view" class="hidden-admin">
           <div class="sec-head"><button class="back-btn" onclick="voltar()" aria-label="Voltar"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6z"/></svg></button><span class="st">Baixar histórico</span></div>
           <div class="ad-card cyber">
@@ -340,6 +367,16 @@
 
       </div>
     </main>
+
+    <div class="confirm-ov" id="confirm-ov">
+      <div class="confirm-box cyber">
+        <div class="confirm-msg" id="confirm-msg"></div>
+        <div class="confirm-actions">
+          <button class="ad-btn ad-btn-ghost" onclick="fecharConfirm()"><span>Cancelar</span></button>
+          <button class="ad-btn ad-btn-danger" onclick="__doConfirm()"><span>Confirmar</span></button>
+        </div>
+      </div>
+    </div>
   </div>
 
 <script>
@@ -368,7 +405,7 @@
   // ---------- drawer + navegacao ----------
   function abrirDrawer(){ $('drawer').classList.add('open'); $('drawer-ov').classList.add('show'); }
   function fecharDrawer(){ $('drawer').classList.remove('open'); $('drawer-ov').classList.remove('show'); }
-  const VIEWS = ['admin-home','admin-panel','admin-stats-view','admin-messages-view','admin-download-view','admin-delete-view','admin-pass-view'];
+  const VIEWS = ['admin-home','admin-panel','admin-stats-view','admin-messages-view','admin-activity-view','admin-download-view','admin-delete-view','admin-pass-view'];
   function mostrar(id){
     VIEWS.forEach(hide); show(id);
     const el=$(id); el.classList.remove('sec-anim'); void el.offsetWidth; el.classList.add('sec-anim');
@@ -383,6 +420,24 @@
   function abrirDownload(){ mostrar('admin-download-view'); }
   async function abrirApagar(){ mostrar('admin-delete-view'); await carregarApagarLista(); }
   function abrirTrocarSenha(){ mostrar('admin-pass-view'); $('np1').value=''; $('np2').value=''; $('pass-err').innerText=''; $('pass-toast').innerText=''; }
+  async function abrirAtividade(){ mostrar('admin-activity-view'); await carregarAtividade(); }
+  async function carregarAtividade(){
+    const lista=$('atividade-lista'); lista.innerHTML='<div class="empty">Carregando...</div>';
+    try {
+      const r = await api('/api/admin/activity', { password: PW });
+      const data = await r.json().catch(()=>({}));
+      if(!r.ok){ lista.innerHTML='<div class="empty">Erro ao carregar.</div>'; return; }
+      const ats = data.atividades || [];
+      if(!ats.length){ lista.innerHTML='<div class="empty">Nenhuma atividade registrada.</div>'; return; }
+      lista.innerHTML='';
+      ats.forEach(a => {
+        const div=document.createElement('div'); div.className='list-item cyber static';
+        div.innerHTML = '<div class="ali-top"><span class="ali-user">'+escapeHtml(a.participante||a.user_id||'—')+'</span><span class="ali-count">'+fmtData(a.created_at)+'</span></div>'
+          + '<div class="act-body"><span class="am-tag">'+escapeHtml(a.tipo||'ajuste')+'</span> '+escapeHtml(a.detalhe||'')+'</div>';
+        lista.appendChild(div);
+      });
+    } catch(e){ lista.innerHTML='<div class="empty">Erro de conexão.</div>'; }
+  }
   async function abrirStats(){ mostrar('admin-stats-view'); FILTRO='todos'; var cs=$('conv-search'); if(cs) cs.value=''; document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active', c.dataset.f==='todos')); await carregarSessoes(); }
 
   async function entrar(){
@@ -430,6 +485,7 @@
            '<div class="ali-title">'+escapeHtml(sx.title||'')+'</div>';
   }
   let SESSOES = [];
+  let MSGS_ATUAL = [];
   let FILTRO = 'todos';
   function setFiltro(f){ FILTRO=f; document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active', c.dataset.f===f)); renderSessoes(); }
   function renderSessoes(){
@@ -479,21 +535,23 @@
       });
     } catch(e){ lista.innerHTML='<div class="empty">Erro de conexão.</div>'; }
   }
-  async function apagarConversa(id){
-    if(!confirm('Apagar esta conversa permanentemente? Ela some para o usuário e não sai mais nos exports.')) return;
-    try {
-      const r = await api('/api/admin/delete_session', { password: PW, session_id: id });
-      const data = await r.json().catch(()=>({}));
-      if(r.ok){ if(data.stats) pintaStats(data.stats); await carregarApagarLista(); }
-    } catch(e){}
+  function apagarConversa(id){
+    pedirConfirmacao('Apagar esta conversa permanentemente? Ela some para o usuário e não sai mais nos exports.', async ()=>{
+      try {
+        const r = await api('/api/admin/delete_session', { password: PW, session_id: id });
+        const data = await r.json().catch(()=>({}));
+        if(r.ok){ if(data.stats) pintaStats(data.stats); await carregarApagarLista(); }
+      } catch(e){}
+    });
   }
-  async function apagarTudo(){
-    if(!confirm('Apagar TODAS as sessões e mensagens do banco? Esta ação não pode ser desfeita.')) return;
-    try {
-      const r = await api('/api/admin/clear_history', { password: PW });
-      const data = await r.json().catch(()=>({}));
-      if(r.ok){ if(data.stats) pintaStats(data.stats); await carregarApagarLista(); }
-    } catch(e){}
+  function apagarTudo(){
+    pedirConfirmacao('Apagar TODAS as sessões e mensagens do banco? Esta ação não pode ser desfeita.', async ()=>{
+      try {
+        const r = await api('/api/admin/clear_history', { password: PW });
+        const data = await r.json().catch(()=>({}));
+        if(r.ok){ if(data.stats) pintaStats(data.stats); await carregarApagarLista(); }
+      } catch(e){}
+    });
   }
   async function verMensagens(sessionId, sx){
     mostrar('admin-messages-view');
@@ -505,6 +563,7 @@
       const data = await r.json().catch(()=>({}));
       if (!r.ok){ lista.innerHTML='<div class="empty">Erro ao carregar.</div>'; return; }
       const msgs = data.mensagens || [];
+      MSGS_ATUAL = msgs;
       if (!msgs.length){ lista.innerHTML='<div class="empty">Sem mensagens.</div>'; return; }
       lista.innerHTML='';
       msgs.forEach(m => {
@@ -539,6 +598,23 @@
       else { t.innerText=''; err.innerText = data.error || 'Falha ao trocar a senha.'; }
     } catch(e){ t.innerText=''; err.innerText='Erro de conexão.'; }
   }
+  function copiarConversa(){
+    if(!MSGS_ATUAL.length) return;
+    const linhas = MSGS_ATUAL.map(m => (m.role==='user'?'Usuário':'Cyborg AI')+' ('+fmtData(m.created_at)+'):\n'+(m.content||'')).join('\n\n');
+    const txt = (($('msg-titulo')||{}).innerText||'Conversa')+'\n\n'+linhas;
+    const done = ()=> copyToast('Conversa copiada \u2713');
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(done).catch(()=>fallbackCopy(txt,done)); }
+    else fallbackCopy(txt, done);
+  }
+  function fallbackCopy(txt, done){ try{ const ta=document.createElement('textarea'); ta.value=txt; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done(); }catch(e){} }
+  function copyToast(msg){ let t=$('copy-toast'); if(!t){ t=document.createElement('div'); t.id='copy-toast'; t.className='copy-toast'; document.body.appendChild(t); } t.textContent=msg; t.classList.add('show'); clearTimeout(t.__h); t.__h=setTimeout(()=>t.classList.remove('show'),1800); }
+
+  // ---- confirmacao estilizada (substitui o confirm nativo) ----
+  let __confirmCb=null;
+  function pedirConfirmacao(msg, onOk){ __confirmCb=onOk; $('confirm-msg').textContent=msg; $('confirm-ov').classList.add('show'); }
+  function fecharConfirm(){ $('confirm-ov').classList.remove('show'); __confirmCb=null; }
+  function __doConfirm(){ const cb=__confirmCb; fecharConfirm(); if(cb) cb(); }
+
   function toggleSenha(){
     const inp=$('pw'); const mostrando = inp.type==='text'; inp.type = mostrando ? 'password' : 'text';
     $('eye-svg').innerHTML = mostrando ? EYE_ON : EYE_OFF;
