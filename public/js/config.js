@@ -38,7 +38,8 @@ window.gerarUUID = function() {
     try {
         var CID = localStorage.getItem('cyborg_cid');
         if (!CID) { CID = (window.gerarUUID ? window.gerarUUID() : String(Math.random())); localStorage.setItem('cyborg_cid', CID); }
-        function ping() { try { fetch(API_BASE_URL + '/api/ping', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cid: CID }) }); } catch (e) {} }
+        function nomeAtual(){ try{ var ss=JSON.parse(localStorage.getItem('cyborg_current_session')||'{}'); return ss.userName || 'Visitante'; }catch(e){ return 'Visitante'; } }
+        function ping() { try { fetch(API_BASE_URL + '/api/ping', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cid: CID, nome: nomeAtual() }) }); } catch (e) {} }
         ping(); setInterval(ping, 30000);
     } catch (e) {}
 })();

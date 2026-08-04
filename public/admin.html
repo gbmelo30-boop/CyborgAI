@@ -122,9 +122,6 @@
   .home-ring{ width:132px; height:132px; animation:ringPulse 3.4s ease-in-out infinite; }
   .home-name{ font-family:'Share Tech Mono',monospace; font-size:1.7rem; letter-spacing:4px; }
   .home-sub{ color:var(--ad-dim); font-size:.85rem; letter-spacing:.5px; max-width:340px; line-height:1.5; }
-  .home-online{ margin-top:14px; font-family:'Share Tech Mono',monospace; font-size:.82rem; color:var(--ad-text);
-                border:1px solid var(--ad-line); padding:8px 14px; min-height:1em;
-                clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px); }
   .home-kpis{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; width:100%; max-width:460px; margin-top:14px; }
   .home-kpi{ padding:16px 10px; text-align:center; }
   .home-kpi .n{ font-family:'Share Tech Mono',monospace; font-size:1.7rem; line-height:1; }
@@ -267,7 +264,7 @@
       </div>
       <button class="drawer-item cyber" onclick="irInicio()"><svg viewBox="0 0 24 24"><path d="M12 3 4 9v12h6v-7h4v7h6V9z"/></svg><span>Início</span></button>
       <button class="drawer-item cyber" onclick="abrirStats()"><svg viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/></svg><span>Conversas</span></button>
-      <button class="drawer-item cyber" onclick="abrirAtividade()"><svg viewBox="0 0 24 24"><path d="M13 3a9 9 0 0 0-9 9H1l4 4 4-4H6a7 7 0 1 1 2 5l-1.45 1.4A9 9 0 1 0 13 3zm-1 5v5l4 2 .75-1.2-3.25-1.95V8z"/></svg><span>Atividade</span></button>
+      <button class="drawer-item cyber" onclick="abrirOnline()"><svg viewBox="0 0 24 24"><path d="M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM6.34 6.34 4.93 4.93a10 10 0 0 0 0 14.14l1.41-1.41a8 8 0 0 1 0-11.32zm11.32 0a8 8 0 0 1 0 11.32l1.41 1.41a10 10 0 0 0 0-14.14l-1.41 1.41zM8.46 8.46 7.05 7.05a6 6 0 0 0 0 8.49l1.41-1.41a4 4 0 0 1 0-5.66zm7.08 0a4 4 0 0 1 0 5.66l1.41 1.41a6 6 0 0 0 0-8.49l-1.41 1.42z"/></svg><span>Online</span></button>
       <button class="drawer-item cyber" onclick="abrirContas()"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg><span>Contas</span></button>
       <button class="drawer-item cyber" onclick="abrirConfig()"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54A.48.48 0 0 0 13.9 2h-3.8a.48.48 0 0 0-.47.41l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.75 8.47a.49.49 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.04.24.24.41.47.41h3.8c.23 0 .43-.17.47-.41l.36-2.54c.59-.24 1.12-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 0 0-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg><span>Configurações</span></button>
       <button class="drawer-item cyber" onclick="abrirDownload()"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg><span>Baixar histórico</span></button>
@@ -285,7 +282,6 @@
           <svg class="ring-svg home-ring" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="none" stroke-width="1.5" stroke-linecap="round" transform="rotate(-90 10 10)"/></svg>
           <div class="home-name">CYBORG AI ADMIN</div>
           <div class="home-sub">Toque na barra à esquerda para abrir o menu e escolher o que ver.</div>
-          <div class="home-online" id="home-online"></div>
         </section>
 
         <!-- CONFIG -->
@@ -338,19 +334,12 @@
         </section>
 
         <!-- ATIVIDADE -->
-      <section id="admin-activity-view" class="hidden-admin">
-        <div class="sec-head"><button class="back-btn" onclick="voltar()" aria-label="Voltar"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6z"/></svg></button><span class="st">Atividade</span></div>
-        <div class="ad-sec-hint">Ajustes feitos pelos participantes (respostas aprimoradas, estilo, memória). Registro mais recente primeiro.</div>
-        <div id="atividade-lista" class="card-grid"></div>
-      </section>
-
-      <!-- PARTICIPANTE (detalhe) -->
-      <section id="admin-part-view" class="hidden-admin">
-        <div class="sec-head"><button class="back-btn" onclick="voltar()" aria-label="Voltar"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6z"/></svg></button><span class="st" id="part-titulo">Participante</span></div>
-        <div class="ad-subtitle">Conversas deste participante</div>
-        <div id="part-convs" class="card-grid"></div>
-        <div class="ad-subtitle">Ajustes deste participante</div>
-        <div id="part-acts" class="card-grid"></div>
+      <section id="admin-online-view" class="hidden-admin">
+        <div class="sec-head"><button class="back-btn" onclick="voltar()" aria-label="Voltar"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6z"/></svg></button><span class="st">Online agora</span></div>
+        <div class="ad-sec-hint">Pessoas com o Cyborg AI aberto neste momento. Atualiza sozinho a cada 15s.</div>
+        <div class="home-kpis" style="max-width:none; margin:0 0 18px;"><div class="home-kpi cyber"><div class="n" id="online-count">–</div><div class="l">online agora</div></div></div>
+        <div class="ad-subtitle">Quem está online</div>
+        <div id="online-lista" class="card-grid"></div>
       </section>
 
       <!-- CONTAS -->
@@ -435,31 +424,46 @@
   // ---------- drawer + navegacao ----------
   function abrirDrawer(){ $('drawer').classList.add('open'); $('drawer-ov').classList.add('show'); }
   function fecharDrawer(){ $('drawer').classList.remove('open'); $('drawer-ov').classList.remove('show'); }
-  const VIEWS = ['admin-home','admin-panel','admin-stats-view','admin-messages-view','admin-activity-view','admin-part-view','admin-contas-view','admin-download-view','admin-delete-view','admin-pass-view'];
+  const VIEWS = ['admin-home','admin-panel','admin-stats-view','admin-messages-view','admin-online-view','admin-contas-view','admin-download-view','admin-delete-view','admin-pass-view'];
   function mostrar(id){
     VIEWS.forEach(hide); show(id);
     const el=$(id); el.classList.remove('sec-anim'); void el.offsetWidth; el.classList.add('sec-anim');
     fecharDrawer(); window.scrollTo(0,0);
   }
+  let __onlineTimer = null;
+  async function abrirOnline(){
+    mostrar('admin-online-view');
+    await carregarOnline();
+    if(!__onlineTimer) __onlineTimer=setInterval(carregarOnline, 15000);
+  }
   async function carregarOnline(){
-    const el=$('home-online'); if(!el) return;
+    const cnt=$('online-count'), lista=$('online-lista'); if(!cnt && !lista) return;
     try {
       const r = await api('/api/admin/online', { password: PW });
       const d = await r.json().catch(()=>({}));
-      if(r.ok){ const n=d.online||0; el.textContent = '\u25CF ' + n + (n===1?' pessoa online agora':' pessoas online agora'); }
-    } catch(e){}
+      if(!r.ok){ if(lista) lista.innerHTML='<div class="empty">Erro ao carregar.</div>'; return; }
+      const n=d.online||0, nomes=d.lista||[];
+      if(cnt) cnt.textContent=n;
+      if(lista){
+        if(!nomes.length){ lista.innerHTML='<div class="empty">Ninguém online agora.</div>'; }
+        else {
+          lista.innerHTML='';
+          nomes.forEach(nome => {
+            const div=document.createElement('div'); div.className='list-item cyber static';
+            div.innerHTML='<div class="ali-top"><span class="ali-user"><span style="color:#22c55e">\u25CF</span> '+escapeHtml(nome||'Visitante')+'</span></div>';
+            lista.appendChild(div);
+          });
+        }
+      }
+    } catch(e){ if(lista) lista.innerHTML='<div class="empty">Erro de conexão.</div>'; }
   }
-  let __onlineTimer = null;
-  function irInicio(){ mostrar('admin-home'); carregarOnline(); if(!__onlineTimer) __onlineTimer=setInterval(carregarOnline, 20000); }
+  function irInicio(){ mostrar('admin-home'); }
   function voltar(){
     // De dentro de uma conversa, volta para a lista de Conversas.
     // Das demais telas, reabre a barra lateral (menu) — onde o usuario estava antes de escolher o item.
     if(!$('admin-messages-view').classList.contains('hidden-admin')){
-      if(__msgVoltarPara==='apagar') abrirApagar();
-      else if(__msgVoltarPara==='part') verParticipante(__partUser, __partNome);
-      else abrirStats();
-    } else if(!$('admin-part-view').classList.contains('hidden-admin')){ abrirAtividade(); }
-    else { abrirDrawer(); }
+      if(__msgVoltarPara==='apagar') abrirApagar(); else abrirStats();
+    } else { abrirDrawer(); }
   }
   function abrirConfig(){ mostrar('admin-panel'); }
   function abrirDownload(){ mostrar('admin-download-view'); }
@@ -495,58 +499,6 @@
         if(r.ok){ await carregarContas(); }
       } catch(e){}
     });
-  }
-  async function abrirAtividade(){ mostrar('admin-activity-view'); await carregarAtividade(); }
-  async function carregarAtividade(){
-    const lista=$('atividade-lista'); lista.innerHTML='<div class="empty">Carregando...</div>';
-    try {
-      const r = await api('/api/admin/activity', { password: PW });
-      const data = await r.json().catch(()=>({}));
-      if(!r.ok){ lista.innerHTML='<div class="empty">Erro ao carregar.</div>'; return; }
-      const ats = data.atividades || [];
-      ATIVIDADES = ats;
-      if(!ats.length){ lista.innerHTML='<div class="empty">Nenhuma atividade registrada.</div>'; return; }
-      lista.innerHTML='';
-      ats.forEach(a => {
-        const div=document.createElement('div'); div.className='list-item cyber';
-        div.onclick = () => verParticipante(a.user_id, a.participante);
-        div.innerHTML = '<div class="ali-top"><span class="ali-user">'+escapeHtml(a.participante||a.user_id||'—')+'</span><span class="ali-count">'+fmtData(a.created_at)+'</span></div>'
-          + '<div class="act-body"><span class="am-tag">'+escapeHtml(a.tipo||'ajuste')+'</span> '+escapeHtml(a.detalhe||'')+'</div>';
-        lista.appendChild(div);
-      });
-    } catch(e){ lista.innerHTML='<div class="empty">Erro de conexão.</div>'; }
-  }
-  async function verParticipante(uid, nome){
-    __partUser = uid; __partNome = nome || '—';
-    mostrar('admin-part-view');
-    $('part-titulo').innerText = nome || 'Participante';
-    // ajustes desse participante (do que ja carregamos na aba Atividade)
-    const acts = $('part-acts'); const meus = (ATIVIDADES||[]).filter(a => a.user_id === uid);
-    if(!meus.length){ acts.innerHTML='<div class="empty">Sem ajustes registrados.</div>'; }
-    else {
-      acts.innerHTML='';
-      meus.forEach(a => {
-        const d=document.createElement('div'); d.className='list-item cyber static';
-        d.innerHTML='<div class="ali-top"><span class="ali-user">'+escapeHtml(a.tipo||'ajuste')+'</span><span class="ali-count">'+fmtData(a.created_at)+'</span></div><div class="act-body">'+escapeHtml(a.detalhe||'')+'</div>';
-        acts.appendChild(d);
-      });
-    }
-    // conversas desse participante
-    const convs = $('part-convs'); convs.innerHTML='<div class="empty">Carregando...</div>';
-    try {
-      const r = await api('/api/admin/sessions', { password: PW });
-      const data = await r.json().catch(()=>({}));
-      if(!r.ok){ convs.innerHTML='<div class="empty">Erro ao carregar.</div>'; return; }
-      const sess = (data.sessoes||[]).filter(s => s.user_id === uid);
-      if(!sess.length){ convs.innerHTML='<div class="empty">Nenhuma conversa deste participante.</div>'; return; }
-      convs.innerHTML='';
-      sess.forEach(sx => {
-        const d=document.createElement('div'); d.className='list-item cyber';
-        d.onclick = () => { __msgVoltarPara='part'; verMensagens(sx.id, sx); };
-        d.innerHTML = itemHtml(sx);
-        convs.appendChild(d);
-      });
-    } catch(e){ convs.innerHTML='<div class="empty">Erro de conexão.</div>'; }
   }
   async function abrirStats(){ mostrar('admin-stats-view'); FILTRO='todos'; var cs=$('conv-search'); if(cs) cs.value=''; document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active', c.dataset.f==='todos')); await carregarSessoes(); }
 
@@ -619,8 +571,6 @@
   let SESSOES = [];
   let MSGS_ATUAL = [];
   let __msgVoltarPara = 'stats';
-  let ATIVIDADES = [];
-  let __partUser = null, __partNome = '';
   let FILTRO = 'todos';
   function setFiltro(f){ FILTRO=f; document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active', c.dataset.f===f)); renderSessoes(); }
   function renderSessoes(){

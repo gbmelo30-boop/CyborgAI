@@ -890,7 +890,7 @@ def ping():
     """Heartbeat do app do usuario, usado para o contador de 'online agora'."""
     d = request.json or {}
     cid = str(d.get("cid") or request.remote_addr or "anon")
-    _ONLINE[cid] = time.time()
+    _ONLINE[cid] = (time.time(), str(d.get("nome") or "Visitante")[:40])
     return jsonify({"ok": True})
 
 
@@ -903,10 +903,10 @@ def admin_online():
         return jsonify({"error": "Senha incorreta."}), 401
     agora = time.time()
     for k in list(_ONLINE):                       # limpa antigos
-        if agora - _ONLINE[k] > ONLINE_WINDOW * 3:
+        if agora - _ONLINE[k][0] > ONLINE_WINDOW * 3:
             _ONLINE.pop(k, None)
-    vivos = sum(1 for v in _ONLINE.values() if agora - v <= ONLINE_WINDOW)
-    return jsonify({"online": vivos})
+    vivos = [nome for (t, nome) in _ONLINE.values() if agora - t <= ONLINE_WINDOW]
+    return jsonify({"online": len(vivos), "lista": sorted(vivos)})
 
 
 @app.route('/api/admin/users', methods=['POST'])
