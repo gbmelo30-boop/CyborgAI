@@ -122,6 +122,9 @@
   .home-ring{ width:132px; height:132px; animation:ringPulse 3.4s ease-in-out infinite; }
   .home-name{ font-family:'Share Tech Mono',monospace; font-size:1.7rem; letter-spacing:4px; }
   .home-sub{ color:var(--ad-dim); font-size:.85rem; letter-spacing:.5px; max-width:340px; line-height:1.5; }
+  .home-online{ margin-top:14px; font-family:'Share Tech Mono',monospace; font-size:.82rem; color:var(--ad-text);
+                border:1px solid var(--ad-line); padding:8px 14px; min-height:1em;
+                clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px); }
   .home-kpis{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; width:100%; max-width:460px; margin-top:14px; }
   .home-kpi{ padding:16px 10px; text-align:center; }
   .home-kpi .n{ font-family:'Share Tech Mono',monospace; font-size:1.7rem; line-height:1; }
@@ -282,6 +285,7 @@
           <svg class="ring-svg home-ring" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="none" stroke-width="1.5" stroke-linecap="round" transform="rotate(-90 10 10)"/></svg>
           <div class="home-name">CYBORG AI ADMIN</div>
           <div class="home-sub">Toque na barra à esquerda para abrir o menu e escolher o que ver.</div>
+          <div class="home-online" id="home-online"></div>
         </section>
 
         <!-- CONFIG -->
@@ -437,7 +441,16 @@
     const el=$(id); el.classList.remove('sec-anim'); void el.offsetWidth; el.classList.add('sec-anim');
     fecharDrawer(); window.scrollTo(0,0);
   }
-  function irInicio(){ mostrar('admin-home'); }
+  async function carregarOnline(){
+    const el=$('home-online'); if(!el) return;
+    try {
+      const r = await api('/api/admin/online', { password: PW });
+      const d = await r.json().catch(()=>({}));
+      if(r.ok){ const n=d.online||0; el.textContent = '\u25CF ' + n + (n===1?' pessoa online agora':' pessoas online agora'); }
+    } catch(e){}
+  }
+  let __onlineTimer = null;
+  function irInicio(){ mostrar('admin-home'); carregarOnline(); if(!__onlineTimer) __onlineTimer=setInterval(carregarOnline, 20000); }
   function voltar(){
     // De dentro de uma conversa, volta para a lista de Conversas.
     // Das demais telas, reabre a barra lateral (menu) — onde o usuario estava antes de escolher o item.

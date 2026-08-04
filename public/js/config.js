@@ -32,3 +32,13 @@ window.gerarUUID = function() {
         (c ^ (rnd() & (15 >> (c / 4)))).toString(16)
     );
 };
+
+// ---- Heartbeat para o contador de "online agora" do admin ----
+(function () {
+    try {
+        var CID = localStorage.getItem('cyborg_cid');
+        if (!CID) { CID = (window.gerarUUID ? window.gerarUUID() : String(Math.random())); localStorage.setItem('cyborg_cid', CID); }
+        function ping() { try { fetch(API_BASE_URL + '/api/ping', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cid: CID }) }); } catch (e) {} }
+        ping(); setInterval(ping, 30000);
+    } catch (e) {}
+})();

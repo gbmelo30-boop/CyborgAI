@@ -20,6 +20,9 @@ load_dotenv()
 # Senha do painel admin (backdoor). Fica no api/.env, fora do código/Git.
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "")
 
+_ONLINE = {}          # cid -> ultimo ping (epoch)
+ONLINE_WINDOW = 70    # segundos para considerar "online"
+
 
 def _admin_ok(pw):
     pw = str(pw or "").strip()  # remove espacos invisiveis do teclado
@@ -880,6 +883,30 @@ def admin_activity():
     if not _admin_ok(d.get("password")):
         return jsonify({"error": "Senha incorreta."}), 401
     return jsonify({"atividades": db_local.list_activities()})
+
+
+@app.route('/api/ping', methods=['POST'])
+def ping():
+    """Heartbeat do app do usuario, usado para o contador de 'online agora'."""
+    d = request.json or {}
+    cid = str(d.get("cid") or request.remote_addr or "anon")
+    _ONLINE[cid] = time.time()
+    return jsonify({"ok": True})
+
+
+@app.route('/api/admin/online', methods=['POST'])
+def admin_online():
+    d = request.json or {}
+    if not ADMIN_PASSWORD:
+        return jsonify({"error": "Admin não configurado no servidor (defina ADMIN_PASSWORD no api/.env)."}), 503
+    if not _admin_ok(d.get("password")):
+        return jsonify({"error": "Senha incorreta."}), 401
+    agora = time.time()
+    for k in list(_ONLINE):                       # limpa antigos
+        if agora - _ONLINE[k] > ONLINE_WINDOW * 3:
+            _ONLINE.pop(k, None)
+    vivos = sum(1 for v in _ONLINE.values() if agora - v <= ONLINE_WINDOW)
+    return jsonify({"online": vivos})
 
 
 @app.route('/api/admin/users', methods=['POST'])
