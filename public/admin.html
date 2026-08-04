@@ -340,6 +340,15 @@
         <div id="atividade-lista" class="card-grid"></div>
       </section>
 
+      <!-- PARTICIPANTE (detalhe) -->
+      <section id="admin-part-view" class="hidden-admin">
+        <div class="sec-head"><button class="back-btn" onclick="voltar()" aria-label="Voltar"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6z"/></svg></button><span class="st" id="part-titulo">Participante</span></div>
+        <div class="ad-subtitle">Conversas deste participante</div>
+        <div id="part-convs" class="card-grid"></div>
+        <div class="ad-subtitle">Ajustes deste participante</div>
+        <div id="part-acts" class="card-grid"></div>
+      </section>
+
       <!-- CONTAS -->
       <section id="admin-contas-view" class="hidden-admin">
         <div class="sec-head"><button class="back-btn" onclick="voltar()" aria-label="Voltar"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6z"/></svg></button><span class="st">Contas</span></div>
@@ -422,7 +431,7 @@
   // ---------- drawer + navegacao ----------
   function abrirDrawer(){ $('drawer').classList.add('open'); $('drawer-ov').classList.add('show'); }
   function fecharDrawer(){ $('drawer').classList.remove('open'); $('drawer-ov').classList.remove('show'); }
-  const VIEWS = ['admin-home','admin-panel','admin-stats-view','admin-messages-view','admin-activity-view','admin-contas-view','admin-download-view','admin-delete-view','admin-pass-view'];
+  const VIEWS = ['admin-home','admin-panel','admin-stats-view','admin-messages-view','admin-activity-view','admin-part-view','admin-contas-view','admin-download-view','admin-delete-view','admin-pass-view'];
   function mostrar(id){
     VIEWS.forEach(hide); show(id);
     const el=$(id); el.classList.remove('sec-anim'); void el.offsetWidth; el.classList.add('sec-anim');
@@ -433,8 +442,11 @@
     // De dentro de uma conversa, volta para a lista de Conversas.
     // Das demais telas, reabre a barra lateral (menu) — onde o usuario estava antes de escolher o item.
     if(!$('admin-messages-view').classList.contains('hidden-admin')){
-      if(__msgVoltarPara==='apagar') abrirApagar(); else abrirStats();
-    } else { abrirDrawer(); }
+      if(__msgVoltarPara==='apagar') abrirApagar();
+      else if(__msgVoltarPara==='part') verParticipante(__partUser, __partNome);
+      else abrirStats();
+    } else if(!$('admin-part-view').classList.contains('hidden-admin')){ abrirAtividade(); }
+    else { abrirDrawer(); }
   }
   function abrirConfig(){ mostrar('admin-panel'); }
   function abrirDownload(){ mostrar('admin-download-view'); }
@@ -479,15 +491,49 @@
       const data = await r.json().catch(()=>({}));
       if(!r.ok){ lista.innerHTML='<div class="empty">Erro ao carregar.</div>'; return; }
       const ats = data.atividades || [];
+      ATIVIDADES = ats;
       if(!ats.length){ lista.innerHTML='<div class="empty">Nenhuma atividade registrada.</div>'; return; }
       lista.innerHTML='';
       ats.forEach(a => {
-        const div=document.createElement('div'); div.className='list-item cyber static';
+        const div=document.createElement('div'); div.className='list-item cyber';
+        div.onclick = () => verParticipante(a.user_id, a.participante);
         div.innerHTML = '<div class="ali-top"><span class="ali-user">'+escapeHtml(a.participante||a.user_id||'—')+'</span><span class="ali-count">'+fmtData(a.created_at)+'</span></div>'
           + '<div class="act-body"><span class="am-tag">'+escapeHtml(a.tipo||'ajuste')+'</span> '+escapeHtml(a.detalhe||'')+'</div>';
         lista.appendChild(div);
       });
     } catch(e){ lista.innerHTML='<div class="empty">Erro de conexão.</div>'; }
+  }
+  async function verParticipante(uid, nome){
+    __partUser = uid; __partNome = nome || '—';
+    mostrar('admin-part-view');
+    $('part-titulo').innerText = nome || 'Participante';
+    // ajustes desse participante (do que ja carregamos na aba Atividade)
+    const acts = $('part-acts'); const meus = (ATIVIDADES||[]).filter(a => a.user_id === uid);
+    if(!meus.length){ acts.innerHTML='<div class="empty">Sem ajustes registrados.</div>'; }
+    else {
+      acts.innerHTML='';
+      meus.forEach(a => {
+        const d=document.createElement('div'); d.className='list-item cyber static';
+        d.innerHTML='<div class="ali-top"><span class="ali-user">'+escapeHtml(a.tipo||'ajuste')+'</span><span class="ali-count">'+fmtData(a.created_at)+'</span></div><div class="act-body">'+escapeHtml(a.detalhe||'')+'</div>';
+        acts.appendChild(d);
+      });
+    }
+    // conversas desse participante
+    const convs = $('part-convs'); convs.innerHTML='<div class="empty">Carregando...</div>';
+    try {
+      const r = await api('/api/admin/sessions', { password: PW });
+      const data = await r.json().catch(()=>({}));
+      if(!r.ok){ convs.innerHTML='<div class="empty">Erro ao carregar.</div>'; return; }
+      const sess = (data.sessoes||[]).filter(s => s.user_id === uid);
+      if(!sess.length){ convs.innerHTML='<div class="empty">Nenhuma conversa deste participante.</div>'; return; }
+      convs.innerHTML='';
+      sess.forEach(sx => {
+        const d=document.createElement('div'); d.className='list-item cyber';
+        d.onclick = () => { __msgVoltarPara='part'; verMensagens(sx.id, sx); };
+        d.innerHTML = itemHtml(sx);
+        convs.appendChild(d);
+      });
+    } catch(e){ convs.innerHTML='<div class="empty">Erro de conexão.</div>'; }
   }
   async function abrirStats(){ mostrar('admin-stats-view'); FILTRO='todos'; var cs=$('conv-search'); if(cs) cs.value=''; document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active', c.dataset.f==='todos')); await carregarSessoes(); }
 
@@ -560,6 +606,8 @@
   let SESSOES = [];
   let MSGS_ATUAL = [];
   let __msgVoltarPara = 'stats';
+  let ATIVIDADES = [];
+  let __partUser = null, __partNome = '';
   let FILTRO = 'todos';
   function setFiltro(f){ FILTRO=f; document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active', c.dataset.f===f)); renderSessoes(); }
   function renderSessoes(){
