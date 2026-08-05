@@ -77,7 +77,8 @@ const CYBORG = {
             if (!response.ok) {
                 const errData = await response.json().catch(() => ({}));
                 let code = 'erro_generico';
-                if (response.status >= 500) code = 'erro_servidor';
+                if (response.status === 503) code = 'erro_carregando';
+                else if (response.status >= 500) code = 'erro_servidor';
                 else if (response.status === 401 || response.status === 403) code = 'erro_permissao';
                 else if (response.status >= 400) code = 'erro_requisicao';
                 window.systemLog(`Falha HTTP ${response.status}: ${errData.error || ''}`, "ERRO");

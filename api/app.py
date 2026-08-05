@@ -358,8 +358,11 @@ FECHAMENTO:
                                "reflexivo, fluido y provocador definido arriba.")
         formatted_messages = [{"role": "system", "content": system_content}]
 
-        for msg in messages[-4:-1]: 
-             formatted_messages.append(msg)
+        for msg in messages[-4:-1]:
+            formatted_messages.append({
+                "role": ("assistant" if msg.get("role") == "assistant" else "user"),
+                "content": (msg.get("content") or "")[:1500]  # limita o historico p/ nao inflar o prompt
+            })
 
         final_content = last_user_msg
         if contexto_rag:
@@ -399,11 +402,17 @@ FECHAMENTO:
             output = llm.create_chat_completion(
                 messages=formatted_messages,
                 temperature=0.4,
-                max_tokens=None,
+                max_tokens=1200,   # orcamento amplo (~900 palavras); alvo do prompt e 350 -> nao corta no meio
                 stop=["<<FIM>>", "<|eot_id|>"]
             )
 
         response_text = output['choices'][0]['message']['content']
+        # Diagnostico: se a resposta parou por limite de tamanho (e nao por fim natural), registra
+        try:
+            if output['choices'][0].get('finish_reason') == 'length':
+                logger.warning("Resposta atingiu o limite de tokens (finish_reason=length) - pode ter cortado.")
+        except Exception:
+            pass
         return response_text, rag_utilizado
 
     except Exception as e:
@@ -438,6 +447,11 @@ def chat():
 
     if not messages:
         return jsonify({"error": "Nenhuma mensagem enviada"}), 400
+
+    # Modelo local ainda carregando (logo apos reiniciar) -> 503 para o front mostrar
+    # a mensagem certa ("carregando o modelo"), em vez de um erro generico.
+    if modelo == 'local' and llm is None:
+        return jsonify({"error": "modelo_carregando"}), 503
 
     # Memoria de personalizacao: so entra no prompt se estiver LIGADA e PRONTA
     memoria = ""
