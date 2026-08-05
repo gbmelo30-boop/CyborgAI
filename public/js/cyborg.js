@@ -26,19 +26,24 @@ const CYBORG = {
             // 1. Salva a pergunta do usuário
             await DB.salvarMensagem(currentSessionId, "user", textoUsuario);
 
-            // 2. Monta o histórico completo — dá memória conversacional ao modelo
+            // 2. Monta o histórico — fonte PRIMARIA: memória em RAM da sessão.
+            // Assim o chat funciona com contexto completo mesmo com a gravação no
+            // banco DESLIGADA (o banco passa a ser apenas persistência, nunca dependência).
+            if (!window.__memHist) window.__memHist = {};
+            const memHist = window.__memHist[currentSessionId] || [];
             const historicoRaw = await DB.carregarHistorico(currentSessionId);
-            const historyForAI = historicoRaw.map(msg => ({
+            const doBanco = historicoRaw.map(msg => ({
                 role: msg.role === 'assistant' ? 'assistant' : 'user',
                 content: msg.content
             }));
-            // Robustez: se o banco falhar (nao gravou/nao leu), o historico volta vazio
-            // ou sem a ultima pergunta. Garantimos que a mensagem atual SEMPRE va no payload,
-            // para o chat funcionar mesmo com o banco indisponivel (a resposta so nao fica salva).
+            // usa o que tiver mais contexto (banco vazio/curto por estar off -> usa a RAM)
+            let historyForAI = (doBanco.length >= memHist.length) ? doBanco : memHist.slice();
+            // a pergunta atual SEMPRE vai no payload (o chat nunca envia vazio -> nunca da 400)
             const ultima = historyForAI[historyForAI.length - 1];
             if (!ultima || ultima.role !== 'user' || ultima.content !== textoUsuario) {
                 historyForAI.push({ role: 'user', content: textoUsuario });
             }
+            window.__memHist[currentSessionId] = historyForAI.slice();
 
             const contextData = window.currentResearchContext ||
                                 JSON.parse(localStorage.getItem('cyborg_current_session')) ||
@@ -88,6 +93,9 @@ const CYBORG = {
             }
 
             const text = (result.response || "").replace("<<FIM>>", "").trim();
+
+            // guarda a resposta na memória da sessão (contexto persiste mesmo sem gravar no banco)
+            (window.__memHist[currentSessionId] = window.__memHist[currentSessionId] || []).push({ role: 'assistant', content: text });
 
             // 3. Salva a resposta da IA (registrando se o RAG foi usado, o estilo e o modelo)
             const estiloUsado = (localStorage.getItem('cyborg_estilo') || 'equilibrado');
