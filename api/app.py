@@ -113,7 +113,7 @@ except Exception as e:
 # --- Ajustes de RAG (enxuto: mais seletivo e rápido, sem janela gigante) ---
 RAG_MATCH_THRESHOLD = 0.45   # só injeta contexto realmente relevante; abaixo disso, usa o prompt puro
 RAG_MATCH_COUNT = 6          # com a GPU, dá pra recuperar mais candidatos sem custo
-RAG_MAX_CHARS = 1800        # orçamento maior de contexto (n_ctx=8192 acomoda folgado)
+RAG_MAX_CHARS = 1200        # menor -> sobra mais espaco de contexto para a resposta nao cortar
 
 
 def buscar_contexto(pergunta):
@@ -342,7 +342,7 @@ FECHAMENTO (obrigatório):
                                "densidade — use esse espaço apenas para aprofundar, jamais para encher linguiça. "
                                "Use LIVREMENTE jargão filosófico e frases eruditas e rebuscadas para levar o usuário à MÁXIMA "
                                "reflexão e extrair o máximo do tema (evite apenas jargão totalmente vazio); evitando ao máximo nomear autores, mantenha-se sempre "
-                               "colado ao cenário concreto que o usuário trouxe. Aqui a prioridade é a PROFUNDIDADE e a sofisticação MÁXIMAS, ainda que a linguagem fique mais erudita e rebuscada. Este é o modo de MAIOR QUALIDADE filosófica: raciocínio mais sofisticado, camadas de sentido, conexões não óbvias e insights que surpreendem — a superioridade intelectual frente aos outros modos deve ser NÍTIDA. O que mais muda entre os modos é a PROFUNDIDADE e a originalidade do pensamento, não o comprimento (o tamanho apenas acompanha a necessidade, podendo ir até ~600 palavras quando o tema realmente pede).")
+                               "colado ao cenário concreto que o usuário trouxe. Aqui a prioridade é a PROFUNDIDADE e a sofisticação MÁXIMAS, ainda que a linguagem fique mais erudita e rebuscada. Este é o modo de MAIOR QUALIDADE filosófica: raciocínio mais sofisticado, camadas de sentido, conexões não óbvias e insights que surpreendem — a superioridade intelectual frente aos outros modos deve ser NÍTIDA. O que mais muda entre os modos é a PROFUNDIDADE e a originalidade do pensamento, não o comprimento (o tamanho apenas acompanha a necessidade, podendo ir até ~600 palavras quando o tema realmente pede). Escreva com vocabulário ELEVADO e sofisticado, sintaxe elaborada e construções conceituais complexas, levando o rebuscamento e a densidade ao limite do que ainda é compreensível; desenvolva UMA grande tese com verticalidade, em vez de tocar muitos pontos rasos. IMPORTANTE: gerencie o espaço para CONCLUIR o raciocínio e finalize SEMPRE com <<FIM>>, jamais deixando a resposta cortada pela metade.")
         elif estilo == "menos_filosofico":
             system_content += ("\n\nAJUSTE DE ESTILO (SÓLIDO E CLARO): entregue uma reflexão filosófica RICA e bem "
                                "construída, com profundidade conceitual real, porém com clareza e ritmo acessíveis ao "
@@ -407,10 +407,10 @@ FECHAMENTO (obrigatório):
                                "reflexivo, fluido y provocador definido arriba.")
         formatted_messages = [{"role": "system", "content": system_content}]
 
-        for msg in messages[-4:-1]:
+        for msg in messages[-3:-1]:
             formatted_messages.append({
                 "role": ("assistant" if msg.get("role") == "assistant" else "user"),
-                "content": (msg.get("content") or "")[:1500]  # limita o historico p/ nao inflar o prompt
+                "content": (msg.get("content") or "")[:900]  # limita o historico p/ nao inflar o prompt
             })
 
         final_content = last_user_msg
@@ -455,7 +455,7 @@ FECHAMENTO (obrigatório):
                 repeat_penalty=1.15,       # evita repeticao/looping -> qualidade nao degenera ao longo do uso
                 frequency_penalty=0.2,     # desestimula repetir as mesmas palavras
                 presence_penalty=0.2,      # incentiva trazer angulos novos a cada resposta
-                max_tokens=1200,   # orcamento amplo (~900 palavras); alvo do prompt e 350 -> nao corta no meio
+                max_tokens=1500,   # orcamento amplo (~1100 palavras); com o prompt enxugado, cabe sem cortar
                 stop=["<<FIM>>", "<|eot_id|>"]
             )
 
