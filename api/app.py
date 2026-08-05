@@ -419,6 +419,10 @@ FECHAMENTO (obrigatório):
             output = llm.create_chat_completion(
                 messages=formatted_messages,
                 temperature=0.4,
+                top_p=0.9,
+                repeat_penalty=1.15,       # evita repeticao/looping -> qualidade nao degenera ao longo do uso
+                frequency_penalty=0.2,     # desestimula repetir as mesmas palavras
+                presence_penalty=0.2,      # incentiva trazer angulos novos a cada resposta
                 max_tokens=1200,   # orcamento amplo (~900 palavras); alvo do prompt e 350 -> nao corta no meio
                 stop=["<<FIM>>", "<|eot_id|>"]
             )
