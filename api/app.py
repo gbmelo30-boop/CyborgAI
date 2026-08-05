@@ -1,4 +1,5 @@
 import os
+import threading
 import hmac
 import logging
 import uuid
@@ -80,6 +81,12 @@ try:
 except Exception as e:
     logger.error(f"Erro ao carregar Llama: {e}")
     llm = None
+
+# Lock de geracao: o objeto Llama (llama.cpp) NAO e thread-safe. O Flask atende
+# varias requisicoes em paralelo; sem isto, dois usuarios simultaneos chamariam o
+# mesmo modelo ao mesmo tempo e ele TRAVA/corrompe. Serializamos: uma resposta por
+# vez, os demais aguardam em fila (o modelo local ja faz 1 inferencia por vez).
+_LLM_LOCK = threading.Lock()
 
 # 3. Carregamento do Embeddings para RAG
 # Modelo multilíngue (mesma dimensão 384) -> muito melhor p/ português. Override via env.
@@ -388,12 +395,13 @@ FECHAMENTO:
         if not llm:
             return "Modelo LLaMA não inicializado.", False
 
-        output = llm.create_chat_completion(
-            messages=formatted_messages,
-            temperature=0.4,
-            max_tokens=None,
-            stop=["<<FIM>>", "<|eot_id|>"]
-        )
+        with _LLM_LOCK:
+            output = llm.create_chat_completion(
+                messages=formatted_messages,
+                temperature=0.4,
+                max_tokens=None,
+                stop=["<<FIM>>", "<|eot_id|>"]
+            )
 
         response_text = output['choices'][0]['message']['content']
         return response_text, rag_utilizado
