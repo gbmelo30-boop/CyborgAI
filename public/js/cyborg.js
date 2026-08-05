@@ -32,6 +32,13 @@ const CYBORG = {
                 role: msg.role === 'assistant' ? 'assistant' : 'user',
                 content: msg.content
             }));
+            // Robustez: se o banco falhar (nao gravou/nao leu), o historico volta vazio
+            // ou sem a ultima pergunta. Garantimos que a mensagem atual SEMPRE va no payload,
+            // para o chat funcionar mesmo com o banco indisponivel (a resposta so nao fica salva).
+            const ultima = historyForAI[historyForAI.length - 1];
+            if (!ultima || ultima.role !== 'user' || ultima.content !== textoUsuario) {
+                historyForAI.push({ role: 'user', content: textoUsuario });
+            }
 
             const contextData = window.currentResearchContext ||
                                 JSON.parse(localStorage.getItem('cyborg_current_session')) ||

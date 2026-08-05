@@ -417,7 +417,11 @@ def chat():
     estilo = (data.get('estilo') or 'equilibrado').strip()
     # O modelo agora e uma configuracao GLOBAL controlada pelo painel admin
     # (nao mais escolhido pelo usuario). Padrao: local.
-    modelo = (db_local.get_config('modelo_ativo', 'local') or 'local').strip().lower()
+    try:
+        modelo = (db_local.get_config('modelo_ativo', 'local') or 'local').strip().lower()
+    except Exception as e:
+        logger.error(f"Falha ao ler modelo_ativo do banco (usando 'local'): {e}")
+        modelo = 'local'
     if modelo not in ('local', 'gemini'):
         modelo = 'local'
     if modelo == 'gemini' and not _gemini_ok:
