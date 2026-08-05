@@ -688,8 +688,12 @@ def salvar_mensagem():
     d = request.json or {}
     if not d.get('session_id') or not d.get('role'):
         return jsonify({"error": "session_id e role são obrigatórios"}), 400
-    m = db_local.add_message(d['session_id'], d['role'], d.get('content', ''), d.get('used_rag', False), d.get('estilo'), d.get('modelo'))
-    return jsonify(m)
+    try:
+        m = db_local.add_message(d['session_id'], d['role'], d.get('content', ''), d.get('used_rag', False), d.get('estilo'), d.get('modelo'))
+        return jsonify(m)
+    except Exception as e:
+        logger.error(f"Falha ao salvar mensagem (nao derruba o chat): {e}")
+        return jsonify({"gravado": False, "error": "nao_salvou"}), 200
 
 
 @app.route('/api/rag_test', methods=['GET'])

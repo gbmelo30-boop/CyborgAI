@@ -10,6 +10,7 @@ import uuid
 import hashlib
 import sqlite3
 import threading
+from contextlib import contextmanager
 from datetime import datetime, timezone, timedelta
 
 try:
@@ -24,13 +25,31 @@ _lock = threading.Lock()
 _vec_cache = None  # (ids, conteudos, matriz_normalizada)
 
 
+@contextmanager
 def _conn():
+    # Context manager robusto para multiusuario:
+    # - WAL: leituras concorrentes + 1 escritor sem travar
+    # - busy_timeout: espera ate 30s por um lock em vez de estourar "database is locked"
+    # - synchronous=NORMAL: seguro com WAL e bem mais rapido
+    # - SEMPRE fecha a conexao no final (o padrao antigo "with connect()" nao fechava = vazamento)
     os.makedirs(DB_DIR, exist_ok=True)
     c = sqlite3.connect(DB_PATH, timeout=30)
     c.row_factory = sqlite3.Row
-    c.execute("PRAGMA journal_mode=WAL;")
-    c.execute("PRAGMA foreign_keys=ON;")
-    return c
+    try:
+        c.execute("PRAGMA journal_mode=WAL;")
+        c.execute("PRAGMA busy_timeout=30000;")
+        c.execute("PRAGMA synchronous=NORMAL;")
+        c.execute("PRAGMA foreign_keys=ON;")
+        yield c
+        c.commit()
+    except Exception:
+        try:
+            c.rollback()
+        except Exception:
+            pass
+        raise
+    finally:
+        c.close()
 
 
 def now_iso():
