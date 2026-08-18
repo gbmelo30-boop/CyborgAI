@@ -1,8 +1,3 @@
-# ==============================================================================
-# BANCO DE DADOS LOCAL (SQLite) — autônomo, sem dependências externas.
-# Guarda sessões, mensagens e os documentos do RAG (embeddings) num único
-# arquivo em ../data/cyborg.db. A busca vetorial do RAG é feita em Python.
-# ==============================================================================
 import os
 import io
 import csv
@@ -22,16 +17,11 @@ DB_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
 DB_PATH = os.path.join(DB_DIR, "cyborg.db")
 
 _lock = threading.Lock()
-_vec_cache = None  # (ids, conteudos, matriz_normalizada)
+_vec_cache = None
 
 
 @contextmanager
 def _conn():
-    # Context manager robusto para multiusuario:
-    # - WAL: leituras concorrentes + 1 escritor sem travar
-    # - busy_timeout: espera ate 30s por um lock em vez de estourar "database is locked"
-    # - synchronous=NORMAL: seguro com WAL e bem mais rapido
-    # - SEMPRE fecha a conexao no final (o padrao antigo "with connect()" nao fechava = vazamento)
     os.makedirs(DB_DIR, exist_ok=True)
     c = sqlite3.connect(DB_PATH, timeout=30)
     c.row_factory = sqlite3.Row
@@ -121,10 +111,8 @@ def init_db():
             CREATE INDEX IF NOT EXISTS idx_activity_created ON activity_log(created_at);
             """
         )
-        # Valores padrão do painel admin (só inserem se ainda não existirem)
         c.execute("INSERT OR IGNORE INTO config (chave,valor) VALUES ('gravar_no_bd','true')")
         c.execute("INSERT OR IGNORE INTO config (chave,valor) VALUES ('rag_padrao','false')")
-        # Remocao de campos legados (grupo/tema) do banco de dados
         for _leg in ("grupo", "tema"):
             try:
                 _cols = [r[1] for r in c.execute("PRAGMA table_info(chat_sessions)").fetchall()]
@@ -132,39 +120,33 @@ def init_db():
                     c.execute(f"ALTER TABLE chat_sessions DROP COLUMN {_leg}")
             except Exception:
                 pass
-        # Migracao leve: coluna folder_id em chat_sessions (pastas do historico)
         try:
             cols = [r[1] for r in c.execute("PRAGMA table_info(chat_sessions)").fetchall()]
             if "folder_id" not in cols:
                 c.execute("ALTER TABLE chat_sessions ADD COLUMN folder_id TEXT")
         except Exception:
             pass
-        # Migracao leve: coluna estilo em chat_messages (registro do estilo de resposta)
         try:
             mcols = [r[1] for r in c.execute("PRAGMA table_info(chat_messages)").fetchall()]
             if "estilo" not in mcols:
                 c.execute("ALTER TABLE chat_messages ADD COLUMN estilo TEXT")
         except Exception:
             pass
-        # Migracao leve: coluna modelo em chat_messages (local x gemini, por resposta)
         try:
             mcols2 = [r[1] for r in c.execute("PRAGMA table_info(chat_messages)").fetchall()]
             if "modelo" not in mcols2:
                 c.execute("ALTER TABLE chat_messages ADD COLUMN modelo TEXT")
         except Exception:
             pass
-        # Migracao leve: coluna estilo em user_prefs (estilo de resposta por conta)
         try:
             pcols = [r[1] for r in c.execute("PRAGMA table_info(user_prefs)").fetchall()]
             if "estilo" not in pcols:
                 c.execute("ALTER TABLE user_prefs ADD COLUMN estilo TEXT DEFAULT 'equilibrado'")
         except Exception:
             pass
-        # Anonimizacao: garante que nenhum nome real fique guardado no banco.
         c.execute("UPDATE chat_sessions SET user_name=NULL WHERE user_name IS NOT NULL")
 
 
-# ------------------------------------------------------------------- Config (admin)
 def get_config(chave, default=None):
     with _conn() as c:
         r = c.execute("SELECT valor FROM config WHERE chave=?", (chave,)).fetchone()
@@ -257,7 +239,6 @@ def stats():
     return {"sessoes": ns, "mensagens": nm, "documentos": nd}
 
 
-# ------------------------------------------------------------------ Sessoes
 def anon_label(user_id):
     """Rotulo anonimo e estavel por participante (derivado do ID do navegador).
     Dois usuarios que digitem o mesmo nome recebem rotulos diferentes."""
@@ -267,7 +248,6 @@ def anon_label(user_id):
     return "Participante " + codigo
 
 
-# ------------------------------------------------------------------ contas
 def _hash_pw(password, salt_hex):
     return hashlib.pbkdf2_hmac(
         "sha256", (password or "").encode("utf-8"),
@@ -275,7 +255,6 @@ def _hash_pw(password, salt_hex):
     ).hex()
 
 
-# ------------------------------------------------- Senha do admin (trocavel na UI)
 def admin_password_set():
     """True se o admin ja trocou a senha pela interface (guardada no BD)."""
     return bool(get_config("admin_pw_hash", ""))
@@ -358,8 +337,6 @@ def delete_user(user_id):
     if not user_id:
         return {"error": "sem_usuario"}
     with _lock, _conn() as c:
-        # Remove somente a conta e os dados pessoais de personalizacao.
-        # As sessoes e mensagens NAO sao apagadas (dado de pesquisa preservado).
         c.execute("DELETE FROM user_prefs WHERE user_id=?", (user_id,))
         c.execute("DELETE FROM users WHERE id=?", (user_id,))
     return {"ok": True}
@@ -398,7 +375,6 @@ def update_user(user_id, name=None, email=None, password=None):
     return {"ok": True, "id": u["id"], "email": u["email"], "name": u["name"]}
 
 
-# ------------------------------------------------------------ Preferencias/memoria
 def get_prefs(user_id):
     with _conn() as c:
         row = c.execute(
@@ -438,7 +414,6 @@ def set_memory_text(user_id, text):
     txt = (text or "").strip()[:2000]
     with _lock, _conn() as c:
         _ensure_prefs(c, user_id)
-        # edicao manual: se tem texto, considera pronta; se vazio, nao
         c.execute("UPDATE user_prefs SET memory_text=?, memory_ready=?, updated_at=? WHERE user_id=?",
                   (txt, 1 if txt else 0, now_iso(), user_id))
 
@@ -476,11 +451,10 @@ def get_user_messages(user_id, limit=40):
 def create_session(user_id, title, user_name=None):
     sid = str(uuid.uuid4())
     ts = now_iso()
-    user_name = (user_name or "").strip() or None  # visitante fica None (anonimo); usuario logado guarda o nome
+    user_name = (user_name or "").strip() or None
     raw = (title or "").strip()
     titulo = (raw[:30] + "...") if len(raw) > 30 else (raw or "Nova conversa")
     if not get_bool("gravar_no_bd", True):
-        # Gravação desligada no painel admin: sessão efêmera (não persiste)
         return {"id": sid, "user_id": user_id, "title": titulo,
                 "user_name": user_name, "is_pinned": False,
                 "created_at": ts, "gravado": False}
@@ -529,7 +503,6 @@ def update_session(session_id, title=None, is_pinned=None, oculta=None, folder_i
         c.execute(f"UPDATE chat_sessions SET {', '.join(sets)} WHERE id=?", vals)
 
 
-# ------------------------------------------------------------------ Pastas
 def create_folder(user_id, name):
     if not user_id:
         return {"error": "sem_usuario"}
@@ -561,7 +534,6 @@ def rename_folder(folder_id, name):
 
 
 def delete_folder(folder_id):
-    # remove a pasta e solta as conversas (nao apaga as conversas)
     with _lock, _conn() as c:
         c.execute("UPDATE chat_sessions SET folder_id=NULL WHERE folder_id=?", (folder_id,))
         c.execute("DELETE FROM folders WHERE id=?", (folder_id,))
@@ -572,7 +544,6 @@ def set_session_folder(session_id, folder_id):
         c.execute("UPDATE chat_sessions SET folder_id=? WHERE id=?", (folder_id or None, session_id))
 
 
-# ----------------------------------------------------------------- Mensagens
 def add_message(session_id, role, content, used_rag=False, estilo=None, modelo=None):
     if role not in ("user", "assistant"):
         role = "assistant"
@@ -598,7 +569,6 @@ def get_messages(session_id):
     return [dict(r) for r in rows]
 
 
-# --------------------------------------------------------------- Exportar CSV
 def _fmt_dt(iso_str):
     try:
         dt = datetime.fromisoformat(iso_str)
@@ -663,7 +633,6 @@ def export_csv(user_id=None, delimiter=";"):
     return buf.getvalue()
 
 
-# --------------------------------------------------------- Documentos (RAG)
 def _emb_to_blob(vec):
     return np.asarray(vec, dtype=np.float32).tobytes()
 

@@ -18,23 +18,20 @@ logger = logging.getLogger("Cyborg_Backend_LLaMA")
 
 load_dotenv()
 
-# Senha do painel admin (backdoor). Fica no api/.env, fora do código/Git.
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "")
 
-_ONLINE = {}          # cid -> ultimo ping (epoch)
-ONLINE_WINDOW = 70    # segundos para considerar "online"
+_ONLINE = {}
+ONLINE_WINDOW = 70
 
 
 def _admin_ok(pw):
-    pw = str(pw or "").strip()  # remove espacos invisiveis do teclado
-    # Se o admin ja trocou a senha pela interface, ela (guardada com hash no BD)
-    # tem prioridade sobre a do .env. Senao, usa a ADMIN_PASSWORD do .env.
+    pw = str(pw or "").strip()
     if db_local.admin_password_set():
         ok = db_local.verify_admin_password(pw)
     else:
         ok = bool(ADMIN_PASSWORD) and hmac.compare_digest(pw, ADMIN_PASSWORD)
     if not ok:
-        time.sleep(0.4)  # freia tentativas de forca bruta no admin
+        time.sleep(0.4)
     return ok
 
 
@@ -51,21 +48,15 @@ def _sec_headers(resp):
     return resp
 
 
-# 1. Banco de dados local (SQLite) — autônomo, sem Supabase
 try:
     db_local.init_db()
     logger.info("Banco de dados local (SQLite) pronto.")
 except Exception as e:
     logger.error(f"Erro ao iniciar o banco local: {e}")
 
-# 2. Carregamento do Modelo Llama Local
-# Modelo selecionável por variável de ambiente; padrão Q4 (mais leve/rápido, ideal p/ RAM limitada)
 MODEL_FILE = os.getenv("MODEL_FILE", "Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf")
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "models", MODEL_FILE)
 
-# Ajustaveis por ambiente (api/.env) sem mexer no codigo:
-#   N_CTX          -> tamanho do contexto (reduza se faltar VRAM; ex.: 6144)
-#   N_GPU_LAYERS   -> camadas na GPU (-1 = todas; reduza se faltar VRAM; ex.: 40)
 N_CTX = int(os.getenv("N_CTX", "8192"))
 N_GPU_LAYERS = int(os.getenv("N_GPU_LAYERS", "-1"))
 try:
@@ -82,14 +73,8 @@ except Exception as e:
     logger.error(f"Erro ao carregar Llama: {e}")
     llm = None
 
-# Lock de geracao: o objeto Llama (llama.cpp) NAO e thread-safe. O Flask atende
-# varias requisicoes em paralelo; sem isto, dois usuarios simultaneos chamariam o
-# mesmo modelo ao mesmo tempo e ele TRAVA/corrompe. Serializamos: uma resposta por
-# vez, os demais aguardam em fila (o modelo local ja faz 1 inferencia por vez).
 _LLM_LOCK = threading.Lock()
 
-# 3. Carregamento do Embeddings para RAG
-# Modelo multilíngue (mesma dimensão 384) -> muito melhor p/ português. Override via env.
 EMBED_MODEL = os.getenv("EMBED_MODEL", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
 try:
     embed_model = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
@@ -98,8 +83,6 @@ except Exception as e:
     embed_model = None
 
 
-# 4. Warm-up: paga o custo unico de init do CUDA/cuBLAS e dos embeddings no boot,
-#    para que a primeira mensagem do usuario ja venha rapida (sem "primeira lenta").
 try:
     if llm:
         llm.create_chat_completion(messages=[{"role": "user", "content": "oi"}], max_tokens=1)
@@ -110,10 +93,9 @@ except Exception as e:
     logger.warning(f"Warm-up falhou (nao critico): {e}")
 
 
-# --- Ajustes de RAG (enxuto: mais seletivo e rápido, sem janela gigante) ---
-RAG_MATCH_THRESHOLD = 0.45   # só injeta contexto realmente relevante; abaixo disso, usa o prompt puro
-RAG_MATCH_COUNT = 6          # com a GPU, dá pra recuperar mais candidatos sem custo
-RAG_MAX_CHARS = 1200        # menor -> sobra mais espaco de contexto para a resposta nao cortar
+RAG_MATCH_THRESHOLD = 0.45
+RAG_MATCH_COUNT = 6
+RAG_MAX_CHARS = 1200
 
 
 def buscar_contexto(pergunta):
@@ -130,7 +112,6 @@ def buscar_contexto(pergunta):
         if not docs:
             return "", False
 
-        # Concatena respeitando um orçamento enxuto de caracteres
         partes, total = [], 0
         for item in docs:
             txt = (item.get('conteudo') or '').strip()
@@ -151,11 +132,6 @@ def buscar_contexto(pergunta):
         return "", False
 
 
-# ============================================================================
-# Backend Gemini (nuvem) — alternativa selecionável em Configurações > Modelos.
-# A chave fica SÓ no api/.env (GEMINI_API_KEY), nunca no código nem no Git.
-# Reaproveita exatamente o mesmo prompt/estilo/RAG do modelo local.
-# ============================================================================
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite")
 _genai = None
@@ -197,7 +173,7 @@ def _gerar_via_gemini(system_content, formatted_messages):
 
 def generate_llm_response(messages, use_rag=True, tema_pesquisa="Geral", user_name="", idioma="pt", estilo="equilibrado", memoria="", modelo="local"):
     try:
-        last_user_msg = (messages[-1].get('content') or '')[:8000]  # limite anti-abuso
+        last_user_msg = (messages[-1].get('content') or '')[:8000]
         contexto_rag = ""
         rag_utilizado = False
 
@@ -215,12 +191,13 @@ def generate_llm_response(messages, use_rag=True, tema_pesquisa="Geral", user_na
 
         SYSTEM_PROMPT = f"""Você é o Cyborg AI, um chatbot FILOSÓFICO que provoca reflexão crítica sobre o cenário concreto trazido pelo usuário, revelando o que não está explícito.
 
-PONTO DE VISTA (é a sua voz, não um assunto a citar): parta sempre de que humano e técnica são inseparáveis — já somos ciborgues. Pense de dentro dessa condição híbrida: fronteiras dissolvidas entre humano e máquina; agências distribuídas entre pessoas, dados e sistemas; conhecimento sempre parcial e situado; poder inscrito em interfaces, algoritmos e infraestruturas; e a possibilidade de subverter as tecnologias. Nunca fale da tecnologia de fora, como observador neutro.{clausula_nome}
+PONTO DE VISTA CIBORGUE (é a sua voz, não um assunto a citar): parta sempre de que humano e técnica são inseparáveis, já somos ciborgues. Pense e escreva DE DENTRO desta condição híbrida, mobilizando densamente o repertório do ciborgue: a dissolução das fronteiras entre humano, animal e máquina e entre o físico e o não físico; a recusa de qualquer origem pura, natureza inocente ou retorno a um estado pré-tecnológico; identidades sempre parciais, contraditórias e situadas, feitas de afinidade e parentesco e não de essência; agências distribuídas entre pessoas, dados e sistemas; o conhecimento como sempre parcial e localizado; o poder inscrito de forma material em interfaces, algoritmos e infraestruturas; a ironia e a potência de subverter as tecnologias, apropriando-se delas contra as suas origens de controle. Nunca fale da tecnologia de fora, como observador neutro.{clausula_nome}
 
 REGRAS:
 - Responda SOMENTE a partir do que o usuário trouxe; NUNCA introduza temas, exemplos ou domínios que ele não mencionou.
 - NUNCA nomeie autores, teorias ou correntes filosóficas (evite citar Donna Haraway); incorpore as ideias como voz própria. Só nomeie se for absolutamente indispensável.
-- Voz de ENSAIO FILOSÓFICO: assertiva, densa e conceitual. Afirme e desenvolva ideias; use perguntas com parcimônia (poucas e profundas), nunca uma enxurrada.
+- Voz de ENSAIO FILOSÓFICO densamente conceitual: desenvolva as ideias com profundidade real, a partir do repertório ciborgue acima. Quanto mais denso e filosófico, melhor.
+- PAPEL DE QUESTIONADOR (obrigatório, SEMPRE): assuma a postura de quem questiona. TODA resposta, sem exceção, deve conter perguntas genuínas dirigidas ao usuário, que devolvam o problema a ele e o forcem a pensar mais fundo. Conduza pela pergunta; nunca entregue conclusões fechadas ou respostas prontas.
 - Vá SEMPRE além do óbvio: exponha pressupostos ocultos, tensões e paradoxos; traga ao menos uma virada de pensamento.
 - Tamanho PROPORCIONAL à pergunta (simples = curta; ampla = mais longa). Os limites de cada modo são TETO, nunca meta; jamais infle o texto.
 - Encerre SEMPRE conduzindo à reflexão (provocação, tensão ou pergunta situada) e finalize com <<FIM>>. Gerencie o espaço para CONCLUIR — nunca deixe a resposta cortada.
@@ -264,7 +241,7 @@ FORMATAÇÃO: markdown limpo; *itálico* para destacar conceitos; tabelas/listas
         for msg in messages[-3:-1]:
             formatted_messages.append({
                 "role": ("assistant" if msg.get("role") == "assistant" else "user"),
-                "content": (msg.get("content") or "")[:900]  # limita o historico p/ nao inflar o prompt
+                "content": (msg.get("content") or "")[:900]
             })
 
         final_content = last_user_msg
@@ -287,7 +264,6 @@ FORMATAÇÃO: markdown limpo; *itálico* para destacar conceitos; tabelas/listas
         
         formatted_messages.append({"role": "user", "content": final_content})
 
-        # Backend de geracao: Gemini (nuvem) se o usuario escolheu; senao, modelo local.
         if modelo == "gemini":
             try:
                 response_text = _gerar_via_gemini(system_content, formatted_messages)
@@ -306,15 +282,14 @@ FORMATAÇÃO: markdown limpo; *itálico* para destacar conceitos; tabelas/listas
                 messages=formatted_messages,
                 temperature=0.4,
                 top_p=0.9,
-                repeat_penalty=1.15,       # evita repeticao/looping -> qualidade nao degenera ao longo do uso
-                frequency_penalty=0.2,     # desestimula repetir as mesmas palavras
-                presence_penalty=0.2,      # incentiva trazer angulos novos a cada resposta
-                max_tokens=1500,   # orcamento amplo (~1100 palavras); com o prompt enxugado, cabe sem cortar
+                repeat_penalty=1.15,
+                frequency_penalty=0.2,
+                presence_penalty=0.2,
+                max_tokens=1500,
                 stop=["<<FIM>>", "<|eot_id|>"]
             )
 
         response_text = output['choices'][0]['message']['content']
-        # Diagnostico: se a resposta parou por limite de tamanho (e nao por fim natural), registra
         try:
             if output['choices'][0].get('finish_reason') == 'length':
                 logger.warning("Resposta atingiu o limite de tokens (finish_reason=length) - pode ter cortado.")
@@ -332,15 +307,12 @@ def chat():
     messages = data.get('messages', [])
     use_rag = data.get('use_rag', False)
     
-    # O front-end envia o tema e o ID da sessão que ele acabou de criar/usar
     tema_pesquisa = data.get('tema') or data.get('topic') or 'Sem Tema'
     idioma = (data.get('idioma') or 'pt').lower()
-    user_name = (data.get('userName') or '').strip()  # usado SO no prompt; NAO e gravado no BD (anonimizacao mantida)
+    user_name = (data.get('userName') or '').strip()
     session_id = data.get('session_id')
     user_id = (data.get('user_id') or '').strip()
     estilo = (data.get('estilo') or 'equilibrado').strip()
-    # O modelo agora e uma configuracao GLOBAL controlada pelo painel admin
-    # (nao mais escolhido pelo usuario). Padrao: local.
     try:
         modelo = (db_local.get_config('modelo_ativo', 'local') or 'local').strip().lower()
     except Exception as e:
@@ -355,12 +327,9 @@ def chat():
     if not messages:
         return jsonify({"error": "Nenhuma mensagem enviada"}), 400
 
-    # Modelo local ainda carregando (logo apos reiniciar) -> 503 para o front mostrar
-    # a mensagem certa ("carregando o modelo"), em vez de um erro generico.
     if modelo == 'local' and llm is None:
         return jsonify({"error": "modelo_carregando"}), 503
 
-    # Memoria de personalizacao: so entra no prompt se estiver LIGADA e PRONTA
     memoria = ""
     prefs = None
     if user_id:
@@ -371,26 +340,21 @@ def chat():
         except Exception as e:
             logger.error(f"Erro ao ler prefs: {e}")
 
-    # LOG para depuração no terminal do servidor
     logger.info(f"Gerando resposta Llama para Sessão: {session_id} | Tema: {tema_pesquisa}")
 
     try:
-        # 1. Chama a função que você já tem para rodar o Llama local e RAG
         response_text, rag_foi_usado = generate_llm_response(messages, use_rag, tema_pesquisa, user_name, idioma, estilo, memoria, modelo)
 
-        # 2. Limpa a tag de parada caso o modelo gere
         response_text = response_text.replace("<<FIM>>", "").strip()
 
-        # 3. Memoria automatica: conta as mensagens e sinaliza quando vale recurar
         memory_should_refresh = False
         if user_id and prefs and prefs.get("memory_enabled"):
             try:
                 n = db_local.bump_msgs_since(user_id)
-                memory_should_refresh = (n >= 10)  # frequencia mais leve: recura a cada 10 mensagens
+                memory_should_refresh = (n >= 10)
             except Exception:
                 pass
 
-        # 4. Retorna apenas os dados para o Front-end.
         return jsonify({
             "response": response_text,
             "session_id": session_id,
@@ -403,9 +367,6 @@ def chat():
         logger.error(f"Erro ao processar Llama: {e}")
         return jsonify({"error": str(e)}), 500
 
-# ============================================================================
-# ENDPOINTS DE HISTÓRICO (SQLite local) — usados pelo front-end (public/js/db.js)
-# ============================================================================
 @app.route('/api/register', methods=['POST'])
 def registrar_usuario():
     d = request.json or {}
@@ -426,7 +387,7 @@ def registrar_usuario():
 @app.route('/api/login', methods=['POST'])
 def login_usuario():
     d = request.json or {}
-    time.sleep(0.3)  # leve atraso: dificulta forca bruta
+    time.sleep(0.3)
     u = db_local.verify_user(d.get('email'), d.get('password'))
     if not u:
         return jsonify({"error": "credenciais_invalidas"}), 401
@@ -529,7 +490,6 @@ def _curar_memoria(user_id):
     ready = bool(mp and mp.group(1) in ('sim', 'yes'))
     mperf = re.search(r'perfil\s*:', low)
     perfil = raw[mperf.end():].strip() if mperf else raw
-    # limpa marcadores de vazio
     if perfil.lower() in ('', 'vazio', 'nenhum', 'n/a', 'nada', '-'):
         perfil = ""
         ready = False
@@ -706,7 +666,7 @@ def admin_export():
         return jsonify({"error": "Admin não configurado no servidor (defina ADMIN_PASSWORD no api/.env)."}), 503
     if not _admin_ok(d.get("password")):
         return jsonify({"error": "Senha incorreta."}), 401
-    csv_data = '\ufeff' + db_local.export_csv()  # BOM p/ acentos no Excel; delimitador ';'
+    csv_data = '\ufeff' + db_local.export_csv()
     return Response(
         csv_data,
         mimetype='text/csv; charset=utf-8',
@@ -736,7 +696,7 @@ def admin_export_xlsx():
     for cell in ws[1]:
         cell.font = Font(bold=True, color="FFFFFF"); cell.fill = fill
         cell.alignment = Alignment(vertical="center")
-    for i, wdt in enumerate([18, 18, 58, 58, 8, 16, 12, 18], start=1):  # session,participante,pergunta,resposta,rag,estilo,modelo,data
+    for i, wdt in enumerate([18, 18, 58, 58, 8, 16, 12, 18], start=1):
         ws.column_dimensions[get_column_letter(i)].width = wdt
     for row in ws.iter_rows(min_row=2):
         for cell in row:
@@ -839,7 +799,7 @@ def admin_online():
     if not _admin_ok(d.get("password")):
         return jsonify({"error": "Senha incorreta."}), 401
     agora = time.time()
-    for k in list(_ONLINE):                       # limpa antigos
+    for k in list(_ONLINE):
         if agora - _ONLINE[k][0] > ONLINE_WINDOW * 3:
             _ONLINE.pop(k, None)
     vivos = [nome for (t, nome) in _ONLINE.values() if agora - t <= ONLINE_WINDOW]

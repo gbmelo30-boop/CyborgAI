@@ -1,10 +1,3 @@
-# ==============================================================================
-# INGESTÃO DE PDFs -> banco local SQLite (RAG).
-# Lê os PDFs de ./documentos_pdf, fatia em trechos, gera embeddings e grava
-# tudo no SQLite local (tabela documentos). Sem dependência do langchain para
-# o fatiamento (fatiador próprio em Python puro -> mais autônomo).
-# Rode uma vez (e sempre que trocar os PDFs):   python3 api/ingest_pdf.py
-# ==============================================================================
 import os
 from pypdf import PdfReader
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -47,7 +40,7 @@ def split_text(texto, chunk_size=1000, overlap=150):
 
 def processar_pdfs():
     db_local.init_db()
-    db_local.clear_documents()  # reingestão limpa (evita duplicar trechos)
+    db_local.clear_documents()
 
     pdf_path = os.path.join(os.path.dirname(__file__), "documentos_pdf")
     if not os.path.exists(pdf_path):

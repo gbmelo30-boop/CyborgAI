@@ -2,7 +2,6 @@ import os
 from supabase import create_client
 from dotenv import load_dotenv
 
-# Carrega variáveis de ambiente
 load_dotenv()
 
 def baixar_biblioteca():
@@ -17,13 +16,11 @@ def baixar_biblioteca():
     bucket_name = 'biblioteca_cyborg'
     local_path = './api/documentos_pdf'
 
-    # Garante que a pasta local existe
     if not os.path.exists(local_path):
         os.makedirs(local_path)
         print(f"Pasta criada: {local_path}")
 
     try:
-        # Lista arquivos no bucket
         arquivos = supabase.storage.from_(bucket_name).list()
         
         if not arquivos:
@@ -33,7 +30,6 @@ def baixar_biblioteca():
         for arquivo in arquivos:
             nome = arquivo['name']
             
-            # Pula pastas ou arquivos vazios que o Supabase às vezes lista
             if nome == '.emptyFolderPlaceholder' or not nome.endswith('.pdf'):
                 continue
 
@@ -41,14 +37,11 @@ def baixar_biblioteca():
             caminho_local = os.path.join(local_path, nome)
             
             try:
-                # Realiza o download
                 res = supabase.storage.from_(bucket_name).download(nome)
                 
-                # Escreve em modo binário garantindo o fechamento do arquivo
                 with open(caminho_local, 'wb') as f:
                     f.write(res)
                 
-                # Verifica se o arquivo não está vazio após o download
                 if os.path.getsize(caminho_local) > 0:
                     print(f"Salvo com sucesso: {caminho_local} ({os.path.getsize(caminho_local)} bytes)")
                 else:
